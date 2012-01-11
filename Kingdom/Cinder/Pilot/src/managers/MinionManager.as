@@ -196,7 +196,44 @@ package managers
 				{
 					minion.questId = -1;
 					sendMinionQuestRequest(minion);
+					dispatchEvent(new MinionEvent(MinionEvent.MINION_QUESTSET, minion));
 				}
+			}
+		}
+		public function increaseMinionFighterStat(minion:Minion, value:Number):void
+		{
+			if (value != 0)
+			{
+				minion.increaseFighterStatBy(value);
+				sendMinionStatRequest(minion);
+				dispatchEvent(new MinionEvent(MinionEvent.MINION_STATSET, minion));
+			}
+		}
+		public function increaseMinionMageStat(minion:Minion, value:Number):void
+		{
+			if (value != 0)
+			{
+				minion.increaseMageStatBy(value);
+				sendMinionStatRequest(minion);
+				dispatchEvent(new MinionEvent(MinionEvent.MINION_STATSET, minion));
+			}
+		}
+		public function increaseMinionGathererStat(minion:Minion, value:Number):void
+		{
+			if (value != 0)
+			{
+				minion.increaseGathererStatBy(value);
+				sendMinionStatRequest(minion);
+				dispatchEvent(new MinionEvent(MinionEvent.MINION_STATSET, minion));
+			}
+		}
+		public function increaseMinionBuilderStat(minion:Minion, value:Number):void
+		{
+			if (value != 0)
+			{
+				minion.increaseBuilderStatBy(value);
+				sendMinionStatRequest(minion);
+				dispatchEvent(new MinionEvent(MinionEvent.MINION_STATSET, minion));
 			}
 		}
 		

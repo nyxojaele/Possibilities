@@ -17,7 +17,7 @@ package managers.city.buildings
 		
 		public function Building_Barracks(id:int=-1) 
 		{
-			super(id, "data/gfx/buildings/barracks.png", null, 2, 2, Building_Barracks.name, Building_Barracks.maxHealth);
+			super(id, "data/gfx/buildings/barracks.png", null, 2, 2, Building_Barracks.name, Building_Barracks.maxHealth, 1);
 		}
 		
 	}

@@ -16,7 +16,7 @@ package managers.city.buildings
 		
 		public function Building_Quarters(id:int=-1) 
 		{
-			super(id, "data/gfx/buildings/quarters.png", null, 1, 1, Building_Quarters.name, Building_Quarters.maxHealth);
+			super(id, "data/gfx/buildings/quarters.png", null, 1, 1, Building_Quarters.name, Building_Quarters.maxHealth, 1);
 		}
 	}
 

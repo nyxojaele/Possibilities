@@ -16,7 +16,7 @@ package managers.city.buildings
 		
 		public function Building_TrainingGrounds(id:int=-1) 
 		{
-			super(id, "data/gfx/buildings/traininggrounds.png", null, 2, 2, Building_TrainingGrounds.name, Building_TrainingGrounds.maxHealth);
+			super(id, "data/gfx/buildings/traininggrounds.png", null, 2, 2, Building_TrainingGrounds.name, Building_TrainingGrounds.maxHealth, 1);
 		}
 		
 	}

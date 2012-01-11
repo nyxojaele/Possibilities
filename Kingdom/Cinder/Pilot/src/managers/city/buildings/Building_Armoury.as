@@ -16,7 +16,7 @@ package managers.city.buildings
 		
 		public function Building_Armoury(id:int=-1) 
 		{
-			super(id, "data/gfx/buildings/armoury.png", null, 2, 2, Building_Armoury.name, Building_Armoury.maxHealth);
+			super(id, "data/gfx/buildings/armoury.png", null, 2, 2, Building_Armoury.name, Building_Armoury.maxHealth, 1);
 		}
 		
 	}

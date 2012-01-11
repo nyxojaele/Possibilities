@@ -16,7 +16,7 @@ package managers.city.buildings
 		
 		public function Building_Blacksmith(id:int=-1) 
 		{
-			super(id, "data/gfx/buildings/blacksmith.png", null, 2, 2, Building_Blacksmith.name, Building_Blacksmith.maxHealth);
+			super(id, "data/gfx/buildings/blacksmith.png", null, 2, 2, Building_Blacksmith.name, Building_Blacksmith.maxHealth, 1);
 		}
 		
 	}

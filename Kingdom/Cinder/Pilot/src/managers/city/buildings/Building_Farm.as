@@ -16,7 +16,7 @@ package managers.city.buildings
 		
 		public function Building_Farm(id:int=-1) 
 		{
-			super(id, "data/gfx/buildings/farm.png", null, 2, 2, Building_Farm.name, Building_Farm.maxHealth);
+			super(id, "data/gfx/buildings/farm.png", null, 2, 2, Building_Farm.name, Building_Farm.maxHealth, 1);
 		}
 		
 	}

@@ -17,7 +17,7 @@ package managers.city.buildings
 		
 		public function Building_null() 
 		{
-			super(-1, null, HILITE_PNG, 1, 1, "", 1);
+			super(-1, null, HILITE_PNG, 1, 1, "", 1, Number.MAX_VALUE);
 		}
 	}
 }

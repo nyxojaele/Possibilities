@@ -10,6 +10,7 @@ package
 	import flash.net.URLRequest;
 	import managers.*;
 	import managers.city.CityEvent;
+	import managers.minions.Minion;
 	import managers.quests.Quest;
 	import managers.quests.QuestEvent;
 	import managers.quests.StepQuest;
@@ -18,6 +19,7 @@ package
 	import managers.city.buildings.*
 	import managers.resources.ResourceCollection;
 	import managers.resources.ResourceEvent;
+	import states.play.PreBuildDisplay;
 	import states.play.WorldView;
 	import states.play.WorldViewEvent;
 	import com.cinder.common.ui.FlxPopup;
@@ -29,6 +31,7 @@ package
 		
 		//Views
 		private var _worldView:WorldView;
+		private var _preBuildDisplay:PreBuildDisplay;
 		
 		//Feedback
 		private var _immediateFeedback:FlxText;
@@ -43,6 +46,7 @@ package
 		//When a NEW building is selected, this is populated, so that when the building placed event fires,
 		//we know how much to spend. This is important because moving buildings shouldn't spend their costs.
 		private var _currentNewBuildingCost:ResourceCollection;
+		private var _currentBuildingMinion:Minion;
 		
 		private var _goldPlusButton:FlxButton;
 		private var _ironPlusButton:FlxButton;
@@ -273,80 +277,105 @@ package
 		
 		private function newQuarters_Click():void 
 		{
-			var building:Building_Quarters = new Building_Quarters();
-			_currentNewBuildingCost = Building_Quarters.resourceCost;
+			removePreBuildDisplay();
 			if (ResourceManager.instance.checkResources(Building_Quarters.resourceCost))
-				_worldView.holdBuilding(building);
+				addPreBuildDisplay(Building_Quarters);
 		}
 		private function newMageTower_Click():void 
 		{
-			var building:Building_MageTower = new Building_MageTower();
-			_currentNewBuildingCost = Building_MageTower.resourceCost;
+			removePreBuildDisplay();
 			if (ResourceManager.instance.checkResources(Building_MageTower.resourceCost))
-				_worldView.holdBuilding(building);
+				addPreBuildDisplay(Building_MageTower);
 		}
 		private function newFence_Click():void 
 		{
-			var building:Building_Fence = new Building_Fence();
-			_currentNewBuildingCost = Building_Fence.resourceCost;
+			removePreBuildDisplay();
 			if (ResourceManager.instance.checkResources(Building_Fence.resourceCost))
-				_worldView.holdBuilding(building);
+				addPreBuildDisplay(Building_Fence);
 		}
 		private function newWall_Click():void 
 		{
-			var building:Building_Wall = new Building_Wall();
-			_currentNewBuildingCost = Building_Wall.resourceCost;
+			removePreBuildDisplay();
 			if (ResourceManager.instance.checkResources(Building_Wall.resourceCost))
-				_worldView.holdBuilding(building);
+				addPreBuildDisplay(Building_Wall);
 		}
 		private function newCastle_Click():void 
 		{
-			var building:Building_Castle = new Building_Castle();
-			_currentNewBuildingCost = Building_Castle.resourceCost;
+			removePreBuildDisplay();
 			if (ResourceManager.instance.checkResources(Building_Castle.resourceCost))
-				_worldView.holdBuilding(building);
+				addPreBuildDisplay(Building_Castle);
 		}
 		private function newBarracks_Click():void 
 		{
-			var building:Building_Barracks = new Building_Barracks();
-			_currentNewBuildingCost = Building_Barracks.resourceCost;
+			removePreBuildDisplay();
 			if (ResourceManager.instance.checkResources(Building_Barracks.resourceCost))
-				_worldView.holdBuilding(building);
+				addPreBuildDisplay(Building_Barracks);
 		}
 		private function newFarm_Click():void 
 		{
-			var building:Building_Farm = new Building_Farm();
-			_currentNewBuildingCost = Building_Farm.resourceCost;
+			removePreBuildDisplay();
 			if (ResourceManager.instance.checkResources(Building_Farm.resourceCost))
-				_worldView.holdBuilding(building);
+				addPreBuildDisplay(Building_Farm);
 		}
 		private function newTrainingGrounds_Click():void 
 		{
-			var building:Building_TrainingGrounds = new Building_TrainingGrounds();
-			_currentNewBuildingCost = Building_TrainingGrounds.resourceCost;
+			removePreBuildDisplay();
 			if (ResourceManager.instance.checkResources(Building_TrainingGrounds.resourceCost))
-				_worldView.holdBuilding(building);
+				addPreBuildDisplay(Building_TrainingGrounds);
 		}
 		private function newBlacksmith_Click():void 
 		{
-			var building:Building_Blacksmith = new Building_Blacksmith();
-			_currentNewBuildingCost = Building_Blacksmith.resourceCost;
+			removePreBuildDisplay();
 			if (ResourceManager.instance.checkResources(Building_Blacksmith.resourceCost))
-				_worldView.holdBuilding(building);
+				addPreBuildDisplay(Building_Blacksmith);
 		}
 		private function newArmoury_Click():void 
 		{
-			var building:Building_Armoury = new Building_Armoury();
-			_currentNewBuildingCost = Building_Armoury.resourceCost;
+			removePreBuildDisplay();
 			if (ResourceManager.instance.checkResources(Building_Armoury.resourceCost))
-				_worldView.holdBuilding(building);
+				addPreBuildDisplay(Building_Armoury);
 		}
 		private function newBarber_Click():void 
 		{
-			var building:Building_Barber = new Building_Barber();
-			_currentNewBuildingCost = Building_Barber.resourceCost;
+			removePreBuildDisplay();
 			if (ResourceManager.instance.checkResources(Building_Barber.resourceCost))
-				_worldView.holdBuilding(building);
+				addPreBuildDisplay(Building_Barber);
+		}
+		private function addPreBuildDisplay(buildingCls:Class):void
+		{
+			_preBuildDisplay = new PreBuildDisplay(buildingCls);
+			_preBuildDisplay.addEventListener(PreBuildDisplay.BUILDDISPLAY_OK, preBuildOk_Click);
+			_preBuildDisplay.addEventListener(PreBuildDisplay.BUILDDISPLAY_CANCEL, preBuildCancel_Click);
+			add(_preBuildDisplay);
+			
+			Cc.log("Created PreBuildDisplay for \"" + buildingCls.name + "\"");
+		}
+		private function removePreBuildDisplay():void
+		{
+			if (_preBuildDisplay)
+			{
+				remove(_preBuildDisplay);
+				_preBuildDisplay.removeEventListener(PreBuildDisplay.BUILDDISPLAY_OK, preBuildOk_Click);
+				_preBuildDisplay.removeEventListener(PreBuildDisplay.BUILDDISPLAY_CANCEL, preBuildCancel_Click);
+				_preBuildDisplay.destroy();
+				_preBuildDisplay = null;
+			}
+		}
+		private function preBuildOk_Click(e:Event):void
+		{
+			var buildingCls:Class = _preBuildDisplay.buildingCls;
+			_currentNewBuildingCost = buildingCls.resourceCost;
+			if (ResourceManager.instance.checkResources(buildingCls.resourceCost))
+			{
+				_worldView.holdBuilding(_preBuildDisplay.building);
+				_currentBuildingMinion = MinionManager.instance.getMinionByIndex(_preBuildDisplay.showingMinionIndex);
+			}
+			
+			removePreBuildDisplay();
+		}
+		private function preBuildCancel_Click(e:Event):void
+		{
+			removePreBuildDisplay();
 		}
 		
 		private function removeBuilding():void 
@@ -384,8 +413,15 @@ package
 			{
 				if (!ResourceManager.instance.removeResources(_currentNewBuildingCost))
 					_worldView.cancelLastPlacedBuilding();
+				else
+					MinionManager.instance.increaseMinionBuilderStat(_currentBuildingMinion, 1);
+				
 				_currentNewBuildingCost = null;
+				_currentBuildingMinion = null;
 			}
+			else
+				//We shouldn't be getting here, but if we do, cancel!
+				_worldView.cancelLastPlacedBuilding();
 		}
 		private function city_BuildingRemoved(e:CityEvent):void 
 		{
@@ -403,8 +439,8 @@ package
 		private function worldView_BuildingCancelled(e:WorldViewEvent):void 
 		{
 			_immediateFeedback.text = "";
-			if (_currentNewBuildingCost)
-				_currentNewBuildingCost = null;
+			_currentNewBuildingCost = null;
+			_currentBuildingMinion = null;
 		}
 		
 		

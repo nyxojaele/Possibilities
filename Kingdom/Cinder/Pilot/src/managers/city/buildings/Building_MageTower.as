@@ -16,7 +16,7 @@ package managers.city.buildings
 		
 		public function Building_MageTower(id:int=-1) 
 		{
-			super(id, "data/gfx/buildings/magetower.png", null, 1, 1, Building_MageTower.name, Building_MageTower.maxHealth);
+			super(id, "data/gfx/buildings/magetower.png", null, 1, 1, Building_MageTower.name, Building_MageTower.maxHealth, 1);
 		}
 		
 	}

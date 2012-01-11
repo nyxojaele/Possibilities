@@ -16,7 +16,7 @@ package managers.city.buildings
 		
 		public function Building_Castle(id:int=-1) 
 		{
-			super(id, "data/gfx/buildings/castle.png", null, 2, 2, Building_Castle.name, Building_Castle.maxHealth);
+			super(id, "data/gfx/buildings/castle.png", null, 2, 2, Building_Castle.name, Building_Castle.maxHealth, 1);
 		}
 		
 	}

@@ -22,12 +22,13 @@ package managers.city.buildings
 	{
 		private var _name:String = "";
 		public function get name():String { return _name; }
-		public function get resourceCost():ResourceCollection { return ResourceCollection.empty; }
 		
 		private var _maxHealth:Number;
 		public function get maxHealth():Number { return _maxHealth; }
 		protected var _currentHealth:Number;
 		public function get currentHealth():Number { return _currentHealth; }
+		protected var _minSkillToBuild:Number = 0;
+		public function get minSkillToBuild():Number { return _minSkillToBuild; }
 		public function initFromServerData(health:Number):void { _currentHealth = health; }
 		
 		
@@ -47,7 +48,7 @@ package managers.city.buildings
 		private var _flashPoint:Point;			//Just a pre-allocated Point to be used when needed
 		
 		
-		public function Building(id:int, imgPath:String, hiliteImg:Class, wInTiles:Number, hInTiles:Number, name:String, maxHP:Number) 
+		public function Building(id:int, imgPath:String, hiliteImg:Class, wInTiles:Number, hInTiles:Number, name:String, maxHP:Number, skillToBuild:Number) 
 		{
 			super(id);
 			

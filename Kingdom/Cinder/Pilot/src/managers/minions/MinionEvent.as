@@ -11,6 +11,7 @@ package managers.minions
 		public static const MINION_ADDED:String = "Minion_Added";
 		public static const MINION_REMOVED:String = "Minion_Removed";
 		public static const MINION_QUESTSET:String = "Minion_QuestSet";
+		public static const MINION_STATSET:String = "Minion_StatSet";
 		
 		
 		public var minion:Minion;
