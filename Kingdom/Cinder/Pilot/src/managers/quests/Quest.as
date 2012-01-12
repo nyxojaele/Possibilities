@@ -42,6 +42,8 @@ package managers.quests
 		public function get name():String { return _name; }
 		private var _description:String = "";
 		public function get description():String { return _description; }
+		private var _completeText:String = "";
+		public function get completeText():String { return _completeText; }
 		//These values should be overridden in derived classes so they return something useful
 		public function get percentDone():Number { return 0; }	//For progress bar, etc...
 		public function get valueCurrent():Number { return 0; }	//For server persistence
@@ -54,9 +56,13 @@ package managers.quests
 		//Rewards
 		private var _rewards:Array = [];
 		public function get rewards():Array { return _rewards; }
+		//Quest chain
+		private var _unlocksQuestIds:Array = [];
+		public function get unlocksQuestIds():Array { return _unlocksQuestIds; }
 		
 		
-		public function Quest(id:Number, questId:uint, name:String, description:String, xPos:Number, yPos:Number,
+		public function Quest(id:Number, questId:uint, name:String, description:String, completeText:String, xPos:Number, yPos:Number,
+			unlockQuestIds:Array,
 			rewardResources:ResourceCollection, rewardMinions:MinionBuilderCollection, rewardMinionStats:MinionStatCollection)
 		{
 			super(id);
@@ -64,6 +70,7 @@ package managers.quests
 			
 			_name = name;
 			_description = description;
+			_completeText = completeText;
 			
 			_x = xPos;
 			_y = yPos;
@@ -74,6 +81,9 @@ package managers.quests
 				rewards.push(new Reward(rewardMinions, MinionManager.instance));
 			if (rewardMinionStats)
 				rewards.push(new Reward(rewardMinionStats, MinionManager.instance));
+			
+			if (unlockQuestIds)
+				_unlocksQuestIds = unlockQuestIds;
 		}
 		
 		
@@ -87,8 +97,6 @@ package managers.quests
 		public function populateStartRequest(request:URLVariables):void { }
 		public function populateUpdateRequest(request:URLVariables):void { }
 		public function populateFinishRequest(request:URLVariables):void { }
-		//This is called on creation so the quest can listen for the correct events
-		public function setupListeners(questId:uint):void{ }
 		
 		//These functions should be overridden in derived classes, but must also call the super function from within the overrides
 		public function initFromServerData(properties:Array):Boolean

@@ -32,11 +32,12 @@ package managers.quests
 		}
 		
 		
-		public function StepQuest(id:Number, questId:Number = -1, name:String = "", description:String = "", xPos:Number = 0, yPos:Number = 0, totalSteps:Number = 1,
+		public function StepQuest(id:Number, questId:Number = -1, name:String = "", description:String = "", completeText:String="", xPos:Number = 0, yPos:Number = 0, totalSteps:Number = 1,
+			unlockQuestIds:Array=null,
 			rewardResources:ResourceCollection=null, rewardMinions:MinionBuilderCollection=null, rewardMinionStats:MinionStatCollection=null) 
 		{
 			_totalSteps = totalSteps;
-			super(id, questId, name, description, xPos, yPos, rewardResources, rewardMinions, rewardMinionStats);
+			super(id, questId, name, description, completeText, xPos, yPos, unlockQuestIds, rewardResources, rewardMinions, rewardMinionStats);
 		}
 		
 		
@@ -78,33 +79,6 @@ package managers.quests
 		}
 		
 		
-		//***************************************************************
-		//
-		//                         LISTENERS
-		//
-		//***************************************************************
-		private function minionHousing1_buildingPlaced(e:CityEvent):void
-		{
-			if (e.building is Building_Quarters)
-			{
-				CityManager.instance.removeEventListener(CityEvent.CITY_BUILDING_PLACED, minionHousing1_buildingPlaced);
-				QuestManager.instance.updateQuest(QuestManager.QUEST_MINIONHOUSING1);
-			}
-		}
-		
-		
-		public override function start():void
-		{
-			//Setup quest-specific listeners
-			switch (_questId)
-			{
-				case QuestManager.QUEST_MINIONHOUSING1:
-					{
-						CityManager.instance.addEventListener(CityEvent.CITY_BUILDING_PLACED, minionHousing1_buildingPlaced);
-						break;
-					}
-			}
-		}
 		public override function update():Boolean
 		{
 			if (_lastCurrentSteps != _currentSteps)

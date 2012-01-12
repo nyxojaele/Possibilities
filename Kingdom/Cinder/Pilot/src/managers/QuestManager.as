@@ -37,6 +37,7 @@ package managers
 		//The following consts and the array after must match each other
 		//Indices must start as 0, as they're also used to index into _questLibrary
 		public static const QUEST_MINIONHOUSING1:uint = 0;
+		public static const QUEST_ACQUIREMINION1:uint = 1;
 		public static var questLibrary:Dictionary;//Contains every quest. Period.
 		private static var questClasses:Dictionary;
 		private static function initQuestLibrary():void
@@ -45,8 +46,9 @@ package managers
 			questLibrary = new Dictionary();
 			questLibrary[QUEST_MINIONHOUSING1] = new StepQuest( -1, QUEST_MINIONHOUSING1, "Construct Minion Housing",
 				"It's going to be important that your minions have a place to sleep. Have one of your minions construct a house.",
-				0, 0, 1, ResourceCollection.empty, MinionBuilderCollection.empty, new MinionStatCollection(0, 0, 0, 1));
-				questLibrary[QUEST_MINIONHOUSING1].setupListeners(QUEST_MINIONHOUSING1);
+				"Congratulations!  What a beautiful building! Notice that your minion is now more experienced in construction and will continue to gain experience as he builds more", 0, 0, 1,
+				[QUEST_ACQUIREMINION1],
+				ResourceCollection.empty, MinionBuilderCollection.empty, new MinionStatCollection(0, 0, 0, 1));
 			//questLibrary[QUEST_MINIONHOUSING1] = new RealtimeQuest(-1, "Realtime Test", "Testing a realtime timed quest", 80, 0, 30000);
 			//questLibrary[QUEST_TIMEDTEST2] = new GametimeQuest(-1, "Gametime Test", "Testing a gametime timed quest", 80, 20, 5000);
 			//questLibrary[QUEST_STEPTEST] = new StepQuest(-1, "Step Test", "Testing a step quest", 80, 40, 5);
@@ -343,7 +345,9 @@ package managers
 					for each (var reward:Reward in quest.rewards)
 						reward.apply(questId);
 					
-					MinionManager.instance.clearQuestIdFromMinions(questId);
+					//Unlock quests
+					for each (var currentQuestId:Number in quest.unlocksQuestIds)
+						makeQuestAvailable(currentQuestId);	//Safe because it updates _questsAvailable only
 						
 					quest.setState(Quest.QUESTSTATE_FINISHED);
 					removeQuests.push(questId);

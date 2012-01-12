@@ -32,12 +32,13 @@ package managers.quests
 		}
 		
 		
-		public function GametimeQuest(id:Number, questId:Number, name:String = "", description:String = "", xPos:Number = 0, yPos:Number = 0, lengthInMs:uint = 30000, startingTime:uint = 0,
-			rewardResources:ResourceCollection=null, rewardMinions:MinionBuilderCollection=null, rewardMinionStats:MinionStatCollection=null) 
+		public function GametimeQuest(id:Number, questId:Number, name:String = "", description:String = "", completeText:String="" xPos:Number = 0, yPos:Number = 0, lengthInMs:uint = 30000, startingTime:uint = 0,
+			unlockQuestIds:Array=null,
+			rewardResources:ResourceCollection = null, rewardMinions:MinionBuilderCollection = null, rewardMinionStats:MinionStatCollection = null) 
 		{
 			_lengthMs = lengthInMs;
 			_timeSoFarMs = startingTime;
-			super(id, questId, name, description, xPos, yPos, rewardResources, rewardMinions, rewardMinionStats);
+			super(id, questId, name, description, completeText, xPos, yPos, unlockQuestIds, rewardResources, rewardMinions, rewardMinionStats);
 		}
 		
 		

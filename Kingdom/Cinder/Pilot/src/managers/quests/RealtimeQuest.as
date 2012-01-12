@@ -36,11 +36,12 @@ package managers.quests
 		}
 		
 		
-		public function RealtimeQuest(id:Number, questId:Number, name:String = "", description:String = "", xPos:Number = 0, yPos:Number = 0, lengthInMs:Number = 0,
+		public function RealtimeQuest(id:Number, questId:Number, name:String = "", description:String = "", completeText:String="", xPos:Number = 0, yPos:Number = 0, lengthInMs:Number = 0,
+			unlockQuestIds:Array=null,
 			rewardResources:ResourceCollection=null, rewardMinions:MinionBuilderCollection=null, rewardMinionStats:MinionStatCollection=null)
 		{
 			_endTime = lengthInMs;
-			super(id, questId, name, description, xPos, yPos, rewardResources, rewardMinions, rewardMinionStats);
+			super(id, questId, name, description, completeText, xPos, yPos, unlocksQuestIds, rewardResources, rewardMinions, rewardMinionStats);
 		}
 		
 		
