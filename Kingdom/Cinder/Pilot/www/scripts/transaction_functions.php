@@ -14,7 +14,7 @@ function Output($variable, $value)
 function CompleteTransaction($errorMessage)
 {
 	global $output;
-	if ($errorMessages)
+	if ($errorMessage)
 	{
 		mysql_query("ROLLBACK");
 		Output("Success", 0);
