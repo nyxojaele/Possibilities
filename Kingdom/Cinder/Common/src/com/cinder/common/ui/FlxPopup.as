@@ -1,6 +1,10 @@
 package com.cinder.common.ui 
 {
 	import flash.display.Graphics;
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
+	import flash.events.IEventDispatcher;
+	import managers.quests.QuestEvent;
 	import org.flixel.Flx9SliceSprite;
 	import org.flixel.FlxButton;
 	import org.flixel.FlxG;
@@ -14,8 +18,9 @@ package com.cinder.common.ui
 	 * ...
 	 * @author Jed Lang
 	 */
-	public class FlxPopup extends FlxGroup 
+	public class FlxPopup extends FlxGroup implements IEventDispatcher
 	{
+		private var _eventDispatcher:EventDispatcher = null;
 		public var key:uint;	//Use this to make checks against flags for whether this popup should be displayed or not (primarily for tutorials)
 		public function set header(value:String):void
 		{
@@ -60,6 +65,8 @@ package com.cinder.common.ui
 		
 		public function FlxPopup(clickToHide:Boolean, bgClass:Class, content:String, header:String="", x:Number=0, y:Number=0, width:Number=200, height:Number=150, pointToX:Number=-1, pointToY:Number=-1, pointerClr:uint=0xFFFFFF)
 		{
+			_eventDispatcher = new EventDispatcher(this);
+			
 			_pointerClr = pointerClr;
 			_width = width;
 			_height = height;
@@ -104,6 +111,7 @@ package com.cinder.common.ui
 				add(_clicker);
 			}
 		}
+		
 		
 		private function drawPointerGraphic(popupPos:FlxPoint):void
 		{
@@ -157,7 +165,7 @@ package com.cinder.common.ui
 		private function setContentPosFrom(value:FlxPoint):void
 		{
 			_contentText.x = value.x + border;
-			_contentText.y = value.y + _height / 2 - 10;
+			_contentText.y = value.y + border + 20;
 		}
 		private function setFooterPosFrom(value:FlxPoint):void
 		{
@@ -180,6 +188,30 @@ package com.cinder.common.ui
 		private function popup_Click():void 
 		{
 			visible = false;
+			dispatchEvent(new PopupEvent(PopupEvent.POPUP_CLICK, this));
+		}
+		
+		
+		/* INTERFACE flash.events.IEventDispatcher */
+		public function dispatchEvent(event:Event):Boolean 
+		{
+			return _eventDispatcher.dispatchEvent(event);
+		}
+		public function hasEventListener(type:String):Boolean 
+		{
+			return _eventDispatcher.hasEventListener(type);
+		}
+		public function willTrigger(type:String):Boolean 
+		{
+			return _eventDispatcher.willTrigger(type);
+		}
+		public function removeEventListener(type:String, listener:Function, useCapture:Boolean = false):void 
+		{
+			_eventDispatcher.removeEventListener(type, listener, useCapture);
+		}
+		public function addEventListener(type:String, listener:Function, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = false):void 
+		{
+			_eventDispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
 		}
 	}
 }
