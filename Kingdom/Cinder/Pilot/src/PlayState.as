@@ -208,6 +208,7 @@ package
 			if (QuestManager.questLibrary[QuestManager.QUEST_MINIONHOUSING1].state == Quest.QUESTSTATE_NONE)
 			{
 				QuestManager.instance.makeQuestAvailable(QuestManager.QUEST_MINIONHOUSING1);
+				QuestManager.instance.startQuest(QuestManager.QUEST_MINIONHOUSING1);
 				_tut = new FlxPopup(true, Pilot.POPUPIMG_PNG, "This is your territory and where you will build structures.  Your minions will carry out the construction of anything you desire, your first task is to get used to the building process.", "Welcome to Kingdom! ", 280, 210, 200, 160, 194, 247, 0x777777);
 			}
 		}
