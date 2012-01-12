@@ -15,6 +15,10 @@ package com.cinder.common.config
 		}
 		
 		
+		public function get DBVersion():Number
+		{
+			return 1;
+		}
 		public function get DebugMode():Boolean
 		{
 			return CONFIG::debug;

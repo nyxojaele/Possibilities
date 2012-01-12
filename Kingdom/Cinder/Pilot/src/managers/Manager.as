@@ -98,6 +98,7 @@ package managers
 			
 			//Setup request
 			var variables:URLVariables = new URLVariables();
+			variables.DBVersion = Configuration.instance.DBVersion;
 			variables.sessionID = sessionID;
 			variables.action = action;
 			variables.requestID = _requestID;

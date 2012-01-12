@@ -120,7 +120,12 @@ function TouchSession($sessionID)
 //This function should be called at the start of any calls to validate the requested session
 function TouchValidSession($sessionID)
 {
-    $sessionResults = mysql_query("
+	$expectedDBVersion = $_POST['DBVersion'];
+	if (!CheckDBVersion($expectedDBVersion))
+		//Invalid DB Version
+		return 0;
+	
+   $sessionResults = mysql_query("
         SELECT
             p_ID
         FROM
@@ -139,6 +144,26 @@ function TouchValidSession($sessionID)
 	
 	//If we got this far, there is a valid session
 	TouchSession($sessionID);
+	return 1;
+}
+
+//This function should be called at the start of all server requests to make sure the DB version is in sync with the client
+//This is called already by TouchValidSession(), so all server requests automatically do this, but any other requests will need to manually call this function
+function CheckDBVersion($expectedDBVersion)
+{
+	$dbVersionResults = mysql_query("
+		SELECT
+			DBVersion
+		FROM
+			tblConfiguration
+		");
+	if (!$dbVersionResults || mysql_num_rows($dbVersionResults) != 1)
+		return 0;
+	$dbVersionRow = mysql_fetch_row($dbVersionResults);
+	$dbVersion = $dbVersionRow[0];
+	if ($dbVersion != $expectedDBVersion)
+		return 0;
+	
 	return 1;
 }
 ?>

@@ -10,6 +10,16 @@ $password = $_POST['password'];
 $success = 0;
 
 
+//Check DB Version
+$expectedDBVersion = $_POST['DBVersion'];
+if (!CheckDBVersion($expectedDBVersion))
+{
+	//Invalid DB Version
+	print "Success=$success&Error='Invalid DB version'";
+	return;
+}
+
+
 //Check if username is being used already
 if (AccountExists($username) != 0)
 {

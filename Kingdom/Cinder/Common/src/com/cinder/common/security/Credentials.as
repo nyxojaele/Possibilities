@@ -3,6 +3,7 @@ package com.cinder.common.security
 	import caurina.transitions.AuxFunctions;
 	import com.adobe.crypto.SHA1;
 	import com.adobe.webapis.URLLoaderBase;
+	import com.cinder.common.config.Configuration;
 	import com.facebook.graph.data.FacebookAuthResponse;
 	import com.facebook.graph.data.FacebookSession;
 	import com.facebook.graph.Facebook;
@@ -91,6 +92,7 @@ package com.cinder.common.security
 			
 			//Setup request
 			var variables:URLVariables = new URLVariables();
+			variables.DBVersion = Configuration.instance.DBVersion;
 			variables.username = actualUsername;
 			
 			var varSend:URLRequest = new URLRequest(_checkAccountUrl);
@@ -161,6 +163,7 @@ package com.cinder.common.security
 			
 			//Setup request
 			var variables:URLVariables = new URLVariables();
+			variables.DBVersion = Configuration.instance.DBVersion;
 			variables.username = actualUsername;
 			variables.password = EncryptPassword(password);
 			
@@ -205,6 +208,7 @@ package com.cinder.common.security
 			
 			//Setup request
 			var variables:URLVariables = new URLVariables();
+			variables.DBVersion = Configuration.instance.DBVersion;
 			variables.username = actualUsername;
 			variables.password = EncryptPassword(password);
 			
