@@ -18,8 +18,8 @@ package managers
 	import flash.utils.getQualifiedSuperclassName;
 	import managers.resources.Resource;
 	import managers.resources.Resource_Gold;
-	import managers.resources.Resource_Iron;
-	import managers.resources.Resource_Silver;
+	import managers.resources.Resource_Wood;
+	import managers.resources.Resource_Food;
 	import org.flixel.FlxG;
 	/**
 	 * ...

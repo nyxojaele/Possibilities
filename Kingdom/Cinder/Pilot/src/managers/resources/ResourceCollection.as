@@ -16,18 +16,18 @@ package managers.resources
 		public static function get empty():ResourceCollection { return _empty; }
 		
 		
-		public function ResourceCollection(gold:Number=0, iron:Number=0, silver:Number=0) 
+		public function ResourceCollection(gold:Number=0, wood:Number=0, food:Number=0) 
 		{
 			var g:Resource_Gold = new Resource_Gold();
 			g.value = gold;
-			var i:Resource_Iron = new Resource_Iron();
-			i.value = iron;
-			var s:Resource_Silver = new Resource_Silver();
-			s.value = silver;
+			var w:Resource_Wood = new Resource_Wood();
+			w.value = wood;
+			var f:Resource_Food = new Resource_Food();
+			f.value = food;
 			
 			setItemAssoc(ResourceManager.RESOURCETYPE_GOLD, g);
-			setItemAssoc(ResourceManager.RESOURCETYPE_IRON, i);
-			setItemAssoc(ResourceManager.RESOURCETYPE_SILVER, s);
+			setItemAssoc(ResourceManager.RESOURCETYPE_WOOD, w);
+			setItemAssoc(ResourceManager.RESOURCETYPE_FOOD, f);
 		}
 		
 		

@@ -9,8 +9,8 @@ package managers
 	import managers.quests.IRewardTarget;
 	import managers.resources.Resource;
 	import managers.resources.Resource_Gold;
-	import managers.resources.Resource_Iron;
-	import managers.resources.Resource_Silver;
+	import managers.resources.Resource_Wood;
+	import managers.resources.Resource_Food;
 	import managers.resources.ResourceCollection;
 	import managers.resources.ResourceEvent;
 	
@@ -20,22 +20,21 @@ package managers
 	 */
 	public class ResourceManager extends Manager implements IRewardTarget
 	{
-		//TODO: Look into rewriting the functions relying on these to instead use Resource classes?
 		//Resource Constants
 		//Make sure that any changes to this list are reflected in the ctor of ResourceCollection!
 		//Also, resources.php getResourceName(), checkResources() and trySpendResources()
 		//Make sure the values applied are binary, as StreamState encodes these as a flagged enum for loading
-		public static const RESOURCETYPE_GOLD:uint = 1;
-		public static const RESOURCETYPE_IRON:uint = 2;
-		public static const RESOURCETYPE_SILVER:uint = 3;
+		public static const RESOURCETYPE_WOOD:uint = 1;
+		public static const RESOURCETYPE_GOLD:uint = 2;
+		public static const RESOURCETYPE_FOOD:uint = 3;
 		
 		public static function getResourceName(resource:uint):String
 		{
 			switch (resource)
 			{
+				case RESOURCETYPE_WOOD: return "Wood";
 				case RESOURCETYPE_GOLD: return "Gold";
-				case RESOURCETYPE_IRON: return "Iron";
-				case RESOURCETYPE_SILVER: return "Silver";
+				case RESOURCETYPE_FOOD: return "Food";
 			}
 			return "";
 		}
@@ -69,9 +68,9 @@ package managers
 		{
 			switch (typeId)
 			{
+				case RESOURCETYPE_WOOD: return Resource_Wood;
 				case RESOURCETYPE_GOLD: return Resource_Gold;
-				case RESOURCETYPE_IRON: return Resource_Iron;
-				case RESOURCETYPE_SILVER: return Resource_Silver;
+				case RESOURCETYPE_FOOD: return Resource_Food;
 			}
 			return null;
 		}
@@ -152,22 +151,22 @@ package managers
 		public function checkResources(checkAgainst:ResourceCollection):Boolean
 		{
 			return _resources.getResource(RESOURCETYPE_GOLD) >= checkAgainst.getResource(RESOURCETYPE_GOLD) &&
-				_resources.getResource(RESOURCETYPE_IRON) >= checkAgainst.getResource(RESOURCETYPE_IRON) &&
-				_resources.getResource(RESOURCETYPE_SILVER) >= checkAgainst.getResource(RESOURCETYPE_SILVER);
+				_resources.getResource(RESOURCETYPE_WOOD) >= checkAgainst.getResource(RESOURCETYPE_WOOD) &&
+				_resources.getResource(RESOURCETYPE_FOOD) >= checkAgainst.getResource(RESOURCETYPE_FOOD);
 		}
 		public function addResources(amount:ResourceCollection):void
 		{
 			addResource(RESOURCETYPE_GOLD, amount.getResource(RESOURCETYPE_GOLD));
-			addResource(RESOURCETYPE_IRON, amount.getResource(RESOURCETYPE_IRON));
-			addResource(RESOURCETYPE_SILVER, amount.getResource(RESOURCETYPE_SILVER));
+			addResource(RESOURCETYPE_WOOD, amount.getResource(RESOURCETYPE_WOOD));
+			addResource(RESOURCETYPE_FOOD, amount.getResource(RESOURCETYPE_FOOD));
 		}
 		public function removeResources(cost:ResourceCollection):Boolean
 		{
 			if (checkResources(cost))
 			{
 				removeResource(RESOURCETYPE_GOLD, cost.getResource(RESOURCETYPE_GOLD));
-				removeResource(RESOURCETYPE_IRON, cost.getResource(RESOURCETYPE_IRON));
-				removeResource(RESOURCETYPE_SILVER, cost.getResource(RESOURCETYPE_SILVER));
+				removeResource(RESOURCETYPE_WOOD, cost.getResource(RESOURCETYPE_WOOD));
+				removeResource(RESOURCETYPE_FOOD, cost.getResource(RESOURCETYPE_FOOD));
 				return true;
 			}
 			return false;

@@ -36,14 +36,14 @@ function CreateNewAccount($username, $password)
 		$commit = "ROLLBACK";
 	$userID = mysql_insert_id();
 	
-	//Fill default resources (order: gold, iron, silver)
+	//Fill default resources (order: wood, gold, food)
 	if (!mysql_query("
 		INSERT INTO
 			tblResources (UserID, Type, Value)
 		VALUES
-			($userID, 1, 100),
+			($userID, 1, 50),
 			($userID, 2, 50),
-			($userID, 3, 40)
+			($userID, 3, 50)
 		"))
 		$commit = "ROLLBACK";
 	
@@ -53,6 +53,17 @@ function CreateNewAccount($username, $password)
 			tblMinions (UserID, Name, FighterStat, MageStat, GathererStat, BuilderStat, QuestID, RequestID, Sex)
 		VALUES
 			($userID, 'Minion', 1, 1, 1, 1, -1, null, 1)
+		"))
+		$commit = "ROLLBACK";
+	
+	//Fill default quests (order: QUEST_RESOURCEWOOD1, QUEST_RESOURCEGOLD1, QUEST_RESOURCEFOOD1)
+	if (!mysql_query("
+		INSERT INTO
+			tblQuests (UserID, QuestIndex, Type, State, RequestID)
+		VALUES
+			($userID, 0, 2, 1, null),
+			($userID, 1, 2, 1, null),
+			($userID, 2, 2, 1, null)
 		"))
 		$commit = "ROLLBACK";
 	
