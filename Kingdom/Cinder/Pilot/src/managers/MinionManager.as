@@ -27,13 +27,6 @@ package managers
 		}
 		
 		
-		public static function getRandomMinionName():String
-		{
-			return (String)(FlxU.getRandom([
-				"Bob",
-				"Steve"
-				]));
-		}
 		public static function getRandomMinionSex():uint
 		{
 			return (uint)(FlxU.getRandom([Minion.MINION_SEXMALE, Minion.MINION_SEXFEMALE]));
@@ -245,7 +238,7 @@ package managers
 			{
 				var bc:MinionBuilderCollection = source as MinionBuilderCollection;
 				for (var i:Number = 0; i < bc.minionBuilderCount; ++i)
-					addNewMinion(MinionManager.getRandomMinionName(), MinionManager.getRandomMinionSex(), bc.getMinionBuilderByIndex(i));
+					addNewMinion("Minion", MinionManager.getRandomMinionSex(), bc.getMinionBuilderByIndex(i));
 			}
 			else if (source is MinionStatCollection)
 			{
