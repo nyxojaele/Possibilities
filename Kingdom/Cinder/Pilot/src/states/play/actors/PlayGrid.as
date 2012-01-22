@@ -9,6 +9,7 @@ package states.play.actors
 	import flash.geom.Rectangle;
 	import managers.city.GridPlacement;
 	import managers.CityManager;
+	import org.flixel.FlxBasic;
 	import org.flixel.FlxG;
 	import org.flixel.FlxGroup;
 	import org.flixel.FlxPoint;
@@ -178,6 +179,7 @@ package states.play.actors
 			return screenToTileCoords(FlxG.mouse.screenX, FlxG.mouse.screenY);
 		}
 		
+		
 		public override function update():void
 		{
 			//Update placementAtMouse
@@ -268,6 +270,16 @@ package states.play.actors
 			super.draw();
 			if (_hilitePlacement)
 				_hilitePlacement.building.drawHilite();
+		}
+		override public function destroy():void 
+		{
+			//Remove building graphics first because we don't want them destroyed!
+			for each (var member:FlxBasic in members)
+			{
+				if (!(member is PlayGridLines))	//Only PlayGridLines stays, as it gets recreated any time we recreate PlayGrid!
+					remove(member);
+			}
+			super.destroy();
 		}
 		
 		//Retrieves an existing building at a specific set of tile coordinates,
