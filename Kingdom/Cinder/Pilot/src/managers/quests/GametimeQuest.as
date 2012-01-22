@@ -1,5 +1,6 @@
 package managers.quests 
 {
+	import com.cinder.common.config.Configuration;
 	import flash.net.URLVariables;
 	import managers.minions.MinionBuilderCollection;
 	import managers.minions.MinionStatCollection;
@@ -10,6 +11,9 @@ package managers.quests
 	 */
 	public class GametimeQuest extends Quest 
 	{
+		public static function get questTypeString():uint { return Quest.QUESTTYPE_GAMETIME; }
+		
+		
 		private static const serverUpdateDelayMs:Number = 60000;	//Time in ms between updates to the server about current progress
 		
 		private var _lastServerUpdateAt:Number = 0;	//Time this quest last updated the server with current status
@@ -32,13 +36,18 @@ package managers.quests
 		}
 		
 		
-		public function GametimeQuest(id:Number, questId:Number, name:String = "", description:String = "", completeText:String="" xPos:Number = 0, yPos:Number = 0, lengthInMs:uint = 30000, startingTime:uint = 0,
+		public function GametimeQuest(id:Number, questId:Number=-1, name:String = "", repeatable:Boolean = false,
+			description:String = "", completeText:String = "", xPos:Number = 0, yPos:Number = 0, lengthInS:uint=30, startingTime:uint=0,
 			unlockQuestIds:Array=null,
-			rewardResources:ResourceCollection = null, rewardMinions:MinionBuilderCollection = null, rewardMinionStats:MinionStatCollection = null) 
+			rewardResources:ResourceCollection = null, rewardMinions:MinionBuilderCollection = null, rewardMinionStats:MinionStatCollection = null,
+			requiredStats:MinionStatCollection = null) 
 		{
-			_lengthMs = lengthInMs;
+			if (Configuration.instance.DebugMode)
+				_lengthMs = lengthInS * 1000 / 60;
+			else
+				_lengthMs = lengthInS * 1000;
 			_timeSoFarMs = startingTime;
-			super(id, questId, name, description, completeText, xPos, yPos, unlockQuestIds, rewardResources, rewardMinions, rewardMinionStats);
+			super(id, questId, name, repeatable, description, completeText, xPos, yPos, unlockQuestIds, rewardResources, rewardMinions, rewardMinionStats, requiredStats);
 		}
 		
 		
@@ -72,10 +81,6 @@ package managers.quests
 			_baseTimeSoFarMs = 0;
 			_lastServerUpdateAt = 0;
 			_startedAt = 0;
-		}
-		public override function populateAvailableRequest(request:URLVariables):void
-		{
-			request.type = QUESTTYPE_GAMETIME;
 		}
 		public override function populateUpdateRequest(request:URLVariables):void
 		{

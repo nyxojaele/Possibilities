@@ -1,5 +1,6 @@
 package managers.quests 
 {
+	import com.cinder.common.config.Configuration;
 	import flash.net.URLVariables;
 	import managers.minions.MinionBuilderCollection;
 	import managers.minions.MinionStatCollection;
@@ -10,6 +11,9 @@ package managers.quests
 	 */
 	public class RealtimeQuest extends Quest 
 	{
+		public static function get questTypeString():uint { return Quest.QUESTTYPE_REALTIME; }
+		
+		
 		private var _startTime:Number = 0;
 		private var _endTime:Number = 0;
 		private function get deltaTime():Number
@@ -36,12 +40,17 @@ package managers.quests
 		}
 		
 		
-		public function RealtimeQuest(id:Number, questId:Number, name:String = "", description:String = "", completeText:String="", xPos:Number = 0, yPos:Number = 0, lengthInMs:Number = 0,
+		public function RealtimeQuest(id:Number, questId:Number=-1, name:String="", repeatable:Boolean=false,
+			description:String="", completeText:String="", xPos:Number=0, yPos:Number=0, lengthInS:Number=0,
 			unlockQuestIds:Array=null,
-			rewardResources:ResourceCollection=null, rewardMinions:MinionBuilderCollection=null, rewardMinionStats:MinionStatCollection=null)
+			rewardResources:ResourceCollection = null, rewardMinions:MinionBuilderCollection = null, rewardMinionStats:MinionStatCollection = null,
+			requiredStats:MinionStatCollection = null)
 		{
-			_endTime = lengthInMs;
-			super(id, questId, name, description, completeText, xPos, yPos, unlocksQuestIds, rewardResources, rewardMinions, rewardMinionStats);
+			if (Configuration.instance.DebugMode)
+				_endTime = lengthInS * 1000 / 60;
+			else
+				_endTime = lengthInS * 1000;
+			super(id, questId, name, repeatable, description, completeText, xPos, yPos, unlocksQuestIds, rewardResources, rewardMinions, rewardMinionStats,  requiredStats);
 		}
 		
 		
@@ -65,10 +74,6 @@ package managers.quests
 		{
 			_endTime -= _startTime;
 			_startTime = 0;
-		}
-		public override function populateAvailableRequest(request:URLVariables):void
-		{
-			request.type = QUESTTYPE_REALTIME;
 		}
 		public override function populateStartRequest(request:URLVariables):void
 		{

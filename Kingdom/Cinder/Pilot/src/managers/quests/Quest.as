@@ -14,9 +14,9 @@ package managers.quests
 	public class Quest extends ManagedItem
 	{
 		//These values are used only for passing to the server so it knows what extra values to save
-		protected const QUESTTYPE_REALTIME:uint = 1;
-		protected const QUESTTYPE_GAMETIME:uint = 2;
-		protected const QUESTTYPE_STEP:uint = 3;
+		protected static const QUESTTYPE_REALTIME:uint = 1;
+		protected static const QUESTTYPE_GAMETIME:uint = 2;
+		protected static const QUESTTYPE_STEP:uint = 3;
 		
 		
 		//These values reflect what the quest's current state is
@@ -27,6 +27,7 @@ package managers.quests
 		
 		
 		protected var _questId:Number = -1;
+		public function get questId():Number { return _questId; }
 		//If this is true after an update, the QuestManager should send an update to the server about this quest
 		protected var _shouldUpdateServer:Boolean = false;
 		public function get shouldUpdateServer():Boolean { return _shouldUpdateServer; }
@@ -40,6 +41,8 @@ package managers.quests
 		
 		private var _name:String = "";
 		public function get name():String { return _name; }
+		private var _repeatable:Boolean = false;
+		public function get repeatable():Boolean { return _repeatable; }
 		private var _description:String = "";
 		public function get description():String { return _description; }
 		private var _completeText:String = "";
@@ -59,16 +62,21 @@ package managers.quests
 		//Quest chain
 		private var _unlocksQuestIds:Array = [];
 		public function get unlocksQuestIds():Array { return _unlocksQuestIds; }
+		//Requirements
+		private var _requiredStats:MinionStatCollection = null;
+		public function get requiredStats():MinionStatCollection { return _requiredStats; }
 		
 		
-		public function Quest(id:Number, questId:uint, name:String, description:String, completeText:String, xPos:Number, yPos:Number,
+		public function Quest(id:Number, questId:uint, name:String, repeatable:Boolean, description:String, completeText:String, xPos:Number, yPos:Number,
 			unlockQuestIds:Array,
-			rewardResources:ResourceCollection, rewardMinions:MinionBuilderCollection, rewardMinionStats:MinionStatCollection)
+			rewardResources:ResourceCollection, rewardMinions:MinionBuilderCollection, rewardMinionStats:MinionStatCollection,
+			requiredStats:MinionStatCollection)
 		{
 			super(id);
 			_questId = questId;
 			
 			_name = name;
+			_repeatable = repeatable;
 			_description = description;
 			_completeText = completeText;
 			
@@ -84,6 +92,8 @@ package managers.quests
 			
 			if (unlockQuestIds)
 				_unlocksQuestIds = unlockQuestIds;
+			
+			_requiredStats = requiredStats;
 		}
 		
 		

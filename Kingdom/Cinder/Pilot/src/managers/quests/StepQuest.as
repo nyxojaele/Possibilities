@@ -14,6 +14,9 @@ package managers.quests
 	 */
 	public class StepQuest extends Quest 
 	{
+		public static function get questTypeString():uint { return Quest.QUESTTYPE_STEP; }
+		
+		
 		private var _totalSteps:Number = 1;
 		private var _lastCurrentSteps:Number = 0;
 		private var _currentSteps:Number = 0;
@@ -32,12 +35,14 @@ package managers.quests
 		}
 		
 		
-		public function StepQuest(id:Number, questId:Number = -1, name:String = "", description:String = "", completeText:String="", xPos:Number = 0, yPos:Number = 0, totalSteps:Number = 1,
+		public function StepQuest(id:Number, questId:Number = -1, name:String = "", repeatable:Boolean = false,
+			description:String="", completeText:String="", xPos:Number=0, yPos:Number=0, totalSteps:Number=1,
 			unlockQuestIds:Array=null,
-			rewardResources:ResourceCollection=null, rewardMinions:MinionBuilderCollection=null, rewardMinionStats:MinionStatCollection=null) 
+			rewardResources:ResourceCollection=null, rewardMinions:MinionBuilderCollection=null, rewardMinionStats:MinionStatCollection=null,
+			requiredStats:MinionStatCollection = null) 
 		{
 			_totalSteps = totalSteps;
-			super(id, questId, name, description, completeText, xPos, yPos, unlockQuestIds, rewardResources, rewardMinions, rewardMinionStats);
+			super(id, questId, name, repeatable, description, completeText, xPos, yPos, unlockQuestIds, rewardResources, rewardMinions, rewardMinionStats,  requiredStats);
 		}
 		
 		
@@ -60,10 +65,6 @@ package managers.quests
 		{
 			_currentSteps = 0;
 			_lastCurrentSteps = 0;
-		}
-		public override function populateAvailableRequest(request:URLVariables):void
-		{
-			request.type = QUESTTYPE_STEP;
 		}
 		public override function populateStartRequest(request:URLVariables):void
 		{
