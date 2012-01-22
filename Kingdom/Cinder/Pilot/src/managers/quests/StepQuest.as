@@ -42,7 +42,7 @@ package managers.quests
 			requiredStats:MinionStatCollection = null) 
 		{
 			_totalSteps = totalSteps;
-			super(id, questId, name, repeatable, description, completeText, xPos, yPos, unlockQuestIds, rewardResources, rewardMinions, rewardMinionStats,  requiredStats);
+			super(id, questId, name, repeatable, description, completeText, xPos, yPos, unlockQuestIds, rewardResources, rewardMinions, rewardMinionStats, requiredStats);
 		}
 		
 		

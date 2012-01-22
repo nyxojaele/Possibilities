@@ -21,6 +21,8 @@ package
 		//Graphics
 		[Embed(source = "data/gfx/interface/popup.png")]
 		public static const POPUPIMG_PNG:Class;
+		[Embed(source = "data/gfx/interface/progressbar_bar.png")]
+		public static const PROGRESSBAR_BAR_PNG:Class;
 		
 		
 		public static var scale:Number = 1;

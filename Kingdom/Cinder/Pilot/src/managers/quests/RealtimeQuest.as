@@ -50,7 +50,7 @@ package managers.quests
 				_endTime = lengthInS * 1000 / 60;
 			else
 				_endTime = lengthInS * 1000;
-			super(id, questId, name, repeatable, description, completeText, xPos, yPos, unlocksQuestIds, rewardResources, rewardMinions, rewardMinionStats,  requiredStats);
+			super(id, questId, name, repeatable, description, completeText, xPos, yPos, unlocksQuestIds, rewardResources, rewardMinions, rewardMinionStats, requiredStats);
 		}
 		
 		

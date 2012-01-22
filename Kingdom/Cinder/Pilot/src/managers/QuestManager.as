@@ -97,15 +97,15 @@ package managers
 			questLibrary[QUEST_RESOURCEWOOD1] = new GametimeQuest( -1, QUEST_RESOURCEWOOD1, "Chop wood", true,
 				"You need wood in order to build and do various other tasks. Send a minion out to chop down some trees.",
 				"", -1, -1, 5, 0, null,
-				new ResourceCollection(0, 1, 0), null, null);
+				new ResourceCollection(0, 1, 0), null, null, MinionStatCollection.empty);
 			questLibrary[QUEST_RESOURCEGOLD1] = new GametimeQuest( -1, QUEST_RESOURCEGOLD1, "Mine gold", true,
 				"You need gold in order to build and do various other tasks. Send a minion out to mine some gold.",
 				"", -1, -1, 5, 0, null,
-				new ResourceCollection(1, 0, 0), null, null);
+				new ResourceCollection(1, 0, 0), null, null, MinionStatCollection.empty);
 			questLibrary[QUEST_RESOURCEFOOD1] = new GametimeQuest( -1, QUEST_RESOURCEFOOD1, "Hunt for food", true,
 				"You need food in order to feed your minions while they build and do other tasks. Send a minion out to hunt for food.",
 				"", -1, -1, 5, 0, null,
-				new ResourceCollection(0, 0, 1), null, null);
+				new ResourceCollection(0, 0, 1), null, null, MinionStatCollection.empty);
 			
 			//************************************************
 			//

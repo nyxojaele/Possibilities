@@ -20,6 +20,7 @@ package
 	import org.flixel.FlxText;
 	import org.flixel.FlxU;
 	import states.FlxButtonTag;
+	import states.map.FlxQuestButton;
 	import states.MinionSelector;
 	
 	public class MapState extends FlxState
@@ -31,7 +32,6 @@ package
 		
 		private var _cityButton:FlxButton;
 		
-		private var _NonLocationQuestCount:Number = 0;
 		private var _NonLocationQuestXOffset:Number = 10;
 		private var _NonLocationQuestYOffset:Number = 50;
 		
@@ -45,6 +45,8 @@ package
 			
 			//Watch for quest changes as we need to update the display
 			QuestManager.instance.addEventListener(QuestEvent.QUEST_BECAMEAVAILABLE, quest_Available);
+			QuestManager.instance.addEventListener(QuestEvent.QUEST_STARTED, quest_Started);
+			QuestManager.instance.addEventListener(QuestEvent.QUEST_UPDATED, quest_Updated);
 			QuestManager.instance.addEventListener(QuestEvent.QUEST_COMPLETE, quest_Complete);
 			
 			//Quest buttons
@@ -53,7 +55,7 @@ package
 				if (quest.state == Quest.QUESTSTATE_AVAILABLE ||
 					quest.state == Quest.QUESTSTATE_STARTED)
 				{
-					var button:FlxButtonTag = generateButtonForQuest(quest);
+					var button:FlxQuestButton = generateButtonForQuest(quest);
 					_questButtons[quest.questId] = button;
 					add(button);
 				}
@@ -63,7 +65,7 @@ package
 			_cityButton = new FlxButton(0, FlxG.height - 20, "City", city_Click);
 			add(_cityButton);
 		}
-		private function generateButtonForQuest(quest:Quest):FlxButtonTag
+		private function generateButtonForQuest(quest:Quest):FlxQuestButton
 		{
 			var actualX:Number = quest.x;
 			var actualY:Number = quest.y;
@@ -72,14 +74,34 @@ package
 			{
 				//Special case: None-location based
 				actualX = _NonLocationQuestXOffset;
-				actualY = _NonLocationQuestYOffset + _NonLocationQuestCount * 20;
-				++_NonLocationQuestCount;
+				actualY = _NonLocationQuestYOffset;
+				while (true)
+				{
+					var match:Boolean = false;
+					for each (var button:FlxQuestButton in _questButtons)
+					{
+						if (button.y == actualY)
+						{
+							match = true;
+							break;
+						}
+					}
+					if (match)
+						actualY += 20;
+					else
+						break;
+				}
 			}
-			return new FlxButtonTag(actualX, actualY, quest.name, questButton_Click, quest.questId);
+			var ret:FlxQuestButton = new FlxQuestButton(actualX, actualY, quest.name, questButton_Click, quest.questId);
+			ret.maxValue = quest.state == Quest.QUESTSTATE_STARTED ? quest.valueGoal : 1;
+			ret.currentvalue = quest.state == Quest.QUESTSTATE_STARTED ? quest.valueCurrent : 0;
+			return ret;
 		}
 		override public function destroy():void 
 		{
 			QuestManager.instance.removeEventListener(QuestEvent.QUEST_BECAMEAVAILABLE, quest_Available);
+			QuestManager.instance.removeEventListener(QuestEvent.QUEST_STARTED, quest_Started);
+			QuestManager.instance.removeEventListener(QuestEvent.QUEST_UPDATED, quest_Updated);
 			QuestManager.instance.removeEventListener(QuestEvent.QUEST_COMPLETE, quest_Complete);
 			super.destroy();
 		}
@@ -87,16 +109,46 @@ package
 		
 		private function quest_Available(e:QuestEvent):void
 		{
-			var button:FlxButtonTag = generateButtonForQuest(e.quest);
-			_questButtons[e.questId] = button;
-			add(button);
+			if (e.quest.repeatable)
+			{
+				if (_questButtons[e.questId] != undefined)
+				{
+					var questButton:FlxQuestButton = _questButtons[e.questId];
+					questButton.currentvalue = 0;
+				}
+			}
+			else
+			{
+				var button:FlxQuestButton = generateButtonForQuest(e.quest);
+				_questButtons[e.questId] = button;
+				add(button);
+			}
+		}
+		private function quest_Started(e:QuestEvent):void
+		{
+			if (_questButtons[e.questId] != undefined)
+			{
+				var questButton:FlxQuestButton = _questButtons[e.questId];
+				questButton.maxValue = e.quest.valueGoal ? e.quest.valueGoal : 1;
+			}
+		}
+		private function quest_Updated(e:QuestEvent):void
+		{
+			if (_questButtons[e.questId] != undefined)
+			{
+				var questButton:FlxQuestButton = _questButtons[e.questId];
+				questButton.currentvalue = e.quest.valueCurrent;
+			}
 		}
 		private function quest_Complete(e:QuestEvent):void
 		{
 			if (_questButtons[e.questId] != undefined)
 			{
-				remove(_questButtons[e.questId]);
-				_questButtons[e.questId] = undefined;
+				if (!e.quest.repeatable)
+				{
+					remove(_questButtons[e.questId]);
+					_questButtons[e.questId] = undefined;
+				}
 			}
 		}
 		
@@ -115,15 +167,16 @@ package
 			if (tag is uint)
 			{
 				var quest:Quest = QuestManager.questLibrary[tag as uint];
-				if (quest.requiredStats)
-				{
-					removePreQuestDisplay();
-					addPreQuestDisplay(tag as uint);
-				}
-				else
+				if (!quest.requiredStats ||
+					quest.state == Quest.QUESTSTATE_STARTED)
 				{
 					hideQuestInfoPopup();
 					showQuestInfoPopup(tag as uint);
+				}
+				else
+				{
+					removePreQuestDisplay();
+					addPreQuestDisplay(tag as uint);
 				}
 			}
 		}
