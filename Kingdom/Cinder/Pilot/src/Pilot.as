@@ -11,7 +11,6 @@ package
 	import managers.CentralUpdater;
 	import managers.CityManager;
 	import managers.QuestManager;
-	import managers.QuestWatcher;
 	import managers.ResourceManager;
 	import org.flixel.*;
 
@@ -37,9 +36,6 @@ package
 			debuggerEnabled = false;
 			_updater = new CentralUpdater();
 			_updater.registerManager(QuestManager.instance);
-			
-			//Just instantiate it, causing events to get hooked up
-			var qw:QuestWatcher = QuestWatcher.instance;
 		}
 		
 		override protected function create(FlashEvent:Event):void 
@@ -50,7 +46,6 @@ package
 			//ResourceManager is lazy initialized
 			CityManager.instance.widthInTiles = 11;
 			CityManager.instance.heightInTiles = 11;
-			Darkness.Init(this);
 		}
 		
 		override protected function update():void 

@@ -72,24 +72,6 @@ package states.play
 			add(actor);
 		}
 		
-		//*******************************************************
-		//
-		//      Convenience functions for creating actors
-		//
-		//*******************************************************
-		//public function createTile(x:Number, y:Number, width:Number, height:Number): TileActor
-		//{
-		//	var ret:TileActor = new TileActor(x, y, width, height, this);
-		//	addActor(ret);
-		//	return ret;
-		//}
-		//public function createRectangleActor(x:Number, y:Number, width:Number, height:Number): RectActor
-		//{
-		//	var ret:RectActor = new RectActor(x, y, width, height, this);
-		//	addActor(ret);
-		//	return ret;
-		//}
-		
 		
 		//Set a specific building as being "held" by the mouse cursor, for placement/movement
 		public function holdBuilding(building:Building):void
@@ -110,6 +92,7 @@ package states.play
 		{
 			_removingBuilding = true;
 		}
+		
 		
 		public override function update():void
 		{
