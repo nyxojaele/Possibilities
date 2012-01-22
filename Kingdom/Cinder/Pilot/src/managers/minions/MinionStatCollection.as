@@ -7,6 +7,9 @@ package managers.minions
 	 */
 	public class MinionStatCollection implements IRewardSource
 	{
+		public static var empty:MinionStatCollection = new MinionStatCollection();
+		
+		
 		private var _stats:MinionBuilder = new MinionBuilder();
 		
 		
