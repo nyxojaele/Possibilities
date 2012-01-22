@@ -1,7 +1,8 @@
 package
 {
 	import com.cinder.common.effects.light.Darkness;
-	import com.cinder.common.ui.FlxObjectWithPopup;
+	import com.cinder.common.ui.ButtonEvent;
+	import com.cinder.common.ui.FlxButtonWithEvents;
 	import com.junkbyte.console.Cc;
 	import com.junkbyte.console.view.GraphingPanel;
 	import flash.display.Bitmap;
@@ -19,7 +20,7 @@ package
 	import managers.city.buildings.*
 	import managers.resources.ResourceCollection;
 	import managers.resources.ResourceEvent;
-	import states.play.PreBuildDisplay;
+	import states.MinionSelector;
 	import states.play.WorldView;
 	import states.play.WorldViewEvent;
 	import com.cinder.common.ui.FlxPopup;
@@ -31,48 +32,52 @@ package
 		
 		//Views
 		private var _worldView:WorldView;
-		private var _preBuildDisplay:PreBuildDisplay;
+		private var _preBuildDisplay:MinionSelector;
+		private var _preUseDisplay:MinionSelector;
 		
 		//Feedback
 		private var _immediateFeedback:FlxText;
 		
 		//Resources
+		private var _woodLabel:FlxText;
+		private var _woodQuantity:FlxText;
 		private var _goldLabel:FlxText;
 		private var _goldQuantity:FlxText;
-		private var _ironLabel:FlxText;
-		private var _ironQuantity:FlxText;
-		private var _silverLabel:FlxText;
-		private var _silverQuantity:FlxText;
+		private var _foodLabel:FlxText;
+		private var _foodQuantity:FlxText;
 		//When a NEW building is selected, this is populated, so that when the building placed event fires,
 		//we know how much to spend. This is important because moving buildings shouldn't spend their costs.
 		private var _currentNewBuildingCost:ResourceCollection;
 		private var _currentBuildingMinion:Minion;
 		
-		private var _goldPlusButton:FlxButton;
-		private var _ironPlusButton:FlxButton;
-		private var _silverPlusButton:FlxButton;
-		
 		//Building buttons
 		private var _removeBuildingButton:FlxButton;
+		private var _buildingCostPopup:FlxPopup;
+		private var _buildingCostPopupVisibility:int = 0;
 		
-		private var _newQuartersButton:FlxObjectWithPopup;
-		private var _newMageTowerButton:FlxObjectWithPopup;
-		private var _newFenceButton:FlxObjectWithPopup;
-		private var _newWallButton:FlxObjectWithPopup;
+		private var _newQuartersButton:FlxButtonWithEvents;
+		private var _newMageTowerButton:FlxButtonWithEvents;
+		private var _newFenceButton:FlxButtonWithEvents;
+		private var _newWallButton:FlxButtonWithEvents;
 		
-		private var _newCastleButton:FlxObjectWithPopup;
-		private var _newBarracksButton:FlxObjectWithPopup;
-		private var _newFarmButton:FlxObjectWithPopup;
-		private var _newTrainingGroundsButton:FlxObjectWithPopup;
-		private var _newBlacksmithButton:FlxObjectWithPopup;
-		private var _newArmouryButton:FlxObjectWithPopup;
-		private var _newBarberButton:FlxObjectWithPopup;
+		private var _newCastleButton:FlxButtonWithEvents;
+		private var _newBarracksButton:FlxButtonWithEvents;
+		private var _newFarmButton:FlxButtonWithEvents;
+		private var _newTrainingGroundsButton:FlxButtonWithEvents;
+		private var _newBlacksmithButton:FlxButtonWithEvents;
+		private var _newArmouryButton:FlxButtonWithEvents;
+		private var _newBarberButton:FlxButtonWithEvents;
+		
+		//Use Building buttons
+		private var _useBarracksButton:FlxButton;
+		private var _useMageTowerButton:FlxButton;
+		private var _useFarmButton:FlxButton;
 		
 		//State buttons
 		private var _mapButton:FlxButton;
 		
 		//Other UI
-		private var _tut:FlxPopup;
+		private var _firstQuestPopup:FlxPopup;
 		
 		
 		override public function create():void
@@ -87,8 +92,22 @@ package
 			setupManagers();
 			setupWorldView();
 			setupCamera();
-			setupGenericWorldData();
 			finalizeUI();				//UI must be added to the view list last, as it must be on top
+		}
+		override public function destroy():void 
+		{
+			_worldView.removeEventListener(WorldViewEvent.WORLD_BUILDING_HILITED, worldView_BuildingHilited);
+			_worldView.removeEventListener(WorldViewEvent.WORLD_BUILDING_HOLDING, worldView_BuildingHolding);
+			_worldView.removeEventListener(WorldViewEvent.WORLD_BUILDING_CANCELLED, worldView_BuildingCancelled);
+			
+			//Resources
+			ResourceManager.instance.removeEventListener(ResourceEvent.RESOURCE_AMOUNTCHANGED, Resource_AmountChanged);
+			
+			//City
+			CityManager.instance.removeEventListener(CityEvent.CITY_BUILDING_PLACED, city_BuildingPlaced);
+			CityManager.instance.removeEventListener(CityEvent.CITY_BUILDING_REMOVED, city_BuildingRemoved);
+			
+			super.destroy();
 		}
 		
 		
@@ -100,11 +119,10 @@ package
 		private function setupManagers(): void
 		{
 			//Resources
-			//TODO: Properly detach events when switching states?  Or set to weak.
 			ResourceManager.instance.addEventListener(ResourceEvent.RESOURCE_AMOUNTCHANGED, Resource_AmountChanged);
+			_woodQuantity.text = ResourceManager.instance.getResource(ResourceManager.RESOURCETYPE_WOOD).toString();
 			_goldQuantity.text = ResourceManager.instance.getResource(ResourceManager.RESOURCETYPE_GOLD).toString();
-			_ironQuantity.text = ResourceManager.instance.getResource(ResourceManager.RESOURCETYPE_IRON).toString();
-			_silverQuantity.text = ResourceManager.instance.getResource(ResourceManager.RESOURCETYPE_SILVER).toString();
+			_foodQuantity.text = ResourceManager.instance.getResource(ResourceManager.RESOURCETYPE_FOOD).toString();
 			
 			//City
 			CityManager.instance.addEventListener(CityEvent.CITY_BUILDING_PLACED, city_BuildingPlaced);
@@ -124,20 +142,6 @@ package
 		{
 			FlxG.camera.bgColor = _bgColor;
 		}
-		private function setupGenericWorldData():void 
-		{
-			//TODO: Put Darkness into ActorManager
-			//Darkness.Instance.enable();
-			//Darkness.Instance.isStatic = true;
-			//Darkness.Instance.addLight(Darkness.LIGHT_CIRCLE, 160, 200, 3);
-			//Darkness.Instance.addLight(Darkness.LIGHT_CIRCLE_FLICKER, 180, 200);
-			//Darkness.Instance.addLight(120, 200);
-			//Darkness.Instance.addLight(150, 180);
-			//Darkness.Instance.addLight(165, 170);
-			//Darkness.Instance.addLight(170, 175);
-			//Darkness.Instance.addLight(140, 160);
-			//Darkness.Instance.addLight(120, 180);
-		}
 		private function setupUI():void
 		{
 			//Bottom "feedback" text
@@ -146,70 +150,94 @@ package
 			
 			
 			//Resources texts
+			_woodLabel = new FlxText(FlxG.width - 160, 0, 40, "Wood: ");
+			_woodLabel.alignment = "right";
+			_woodQuantity = new FlxText(FlxG.width - 120, 0, 40);
+			
 			_goldLabel = new FlxText(FlxG.width - 240, 0, 40, "Gold: ");
 			_goldLabel.alignment = "right";
 			_goldQuantity = new FlxText(FlxG.width - 200, 0, 40);
 			
-			_ironLabel = new FlxText(FlxG.width - 160, 0, 40, "Iron: ");
-			_ironLabel.alignment = "right";
-			_ironQuantity = new FlxText(FlxG.width - 120, 0, 40);
-			
-			_silverLabel = new FlxText(FlxG.width - 80, 0, 40, "Silver: ");
-			_silverLabel.alignment = "right";
-			_silverQuantity = new FlxText(FlxG.width - 40, 0, 40);
+			_foodLabel = new FlxText(FlxG.width - 80, 0, 40, "Food: ");
+			_foodLabel.alignment = "right";
+			_foodQuantity = new FlxText(FlxG.width - 40, 0, 40);
 			
 			
-			//Resource buttons
-			_goldPlusButton = new FlxButton(FlxG.width - 240, 20, "Add Gold", goldPlus_Click);
-			_ironPlusButton = new FlxButton(FlxG.width - 160, 20, "Add Iron", ironPlus_Click);
-			_silverPlusButton = new FlxButton(FlxG.width - 80, 20, "Add Silver", silverPlus_Click);
-			
-			
+			_buildingCostPopup = new FlxPopup(false, Pilot.POPUPIMG_PNG, "");
+			_buildingCostPopup.visible = false;
 			//"New building" buttons
-			var newQuartersContent:FlxButton = new FlxButton(FlxG.width - 160, 100, "New Quarters", newQuarters_Click);
-			_newQuartersButton = new FlxObjectWithPopup(Pilot.POPUPIMG_PNG, newQuartersContent, Building_Quarters, populateNewBuildingPopup);
+			_newQuartersButton = new FlxButtonWithEvents(FlxG.width - 160, 100, "New Quarters", newQuarters_Click);
+			_newQuartersButton.addEventListener(ButtonEvent.MOUSE_JUSTOVER, newQuartersButton_JustOver);
+			_newQuartersButton.addEventListener(ButtonEvent.MOUSE_JUSTOUT, button_JustOut);
 			
-			var newMageTowerContent:FlxButton = new FlxButton(FlxG.width - 160, 120, "New Mage Tower", newMageTower_Click);
-			_newMageTowerButton = new FlxObjectWithPopup(Pilot.POPUPIMG_PNG, newMageTowerContent, Building_MageTower, populateNewBuildingPopup);
+			_newMageTowerButton = new FlxButtonWithEvents(FlxG.width - 160, 120, "New Mage Tower", newMageTower_Click);
+			_newMageTowerButton.addEventListener(ButtonEvent.MOUSE_JUSTOVER, newMageTowerButton_JustOver);
+			_newMageTowerButton.addEventListener(ButtonEvent.MOUSE_JUSTOUT, button_JustOut);
 			
-			var newFenceContent:FlxButton = new FlxButton(FlxG.width - 160, 140, "New Fence", newFence_Click);
-			_newFenceButton = new FlxObjectWithPopup(Pilot.POPUPIMG_PNG, newFenceContent, Building_Fence, populateNewBuildingPopup);
+			_newFenceButton = new FlxButtonWithEvents(FlxG.width - 160, 140, "New Fence", newFence_Click);
+			_newFenceButton.addEventListener(ButtonEvent.MOUSE_JUSTOVER, newFenceButton_JustOver);
+			_newFenceButton.addEventListener(ButtonEvent.MOUSE_JUSTOUT, button_JustOut);
 			
-			var newWallContent:FlxButton = new FlxButton(FlxG.width - 160, 160, "New Wall", newWall_Click);
-			_newWallButton = new FlxObjectWithPopup(Pilot.POPUPIMG_PNG, newWallContent, Building_Wall, populateNewBuildingPopup);
+			_newWallButton = new FlxButtonWithEvents(FlxG.width - 160, 160, "New Wall", newWall_Click);
+			_newWallButton.addEventListener(ButtonEvent.MOUSE_JUSTOVER, newWallButton_JustOver);
+			_newWallButton.addEventListener(ButtonEvent.MOUSE_JUSTOUT, button_JustOut);
 			
-			var newCastleContent:FlxButton = new FlxButton(FlxG.width - 80, 100, "New Castle", newCastle_Click);
-			_newCastleButton = new FlxObjectWithPopup(Pilot.POPUPIMG_PNG, newCastleContent, Building_Castle, populateNewBuildingPopup);
+			_newCastleButton = new FlxButtonWithEvents(FlxG.width - 80, 100, "New Castle", newCastle_Click);
+			_newCastleButton.addEventListener(ButtonEvent.MOUSE_JUSTOVER, newCastleButton_JustOver);
+			_newCastleButton.addEventListener(ButtonEvent.MOUSE_JUSTOUT, button_JustOut);
 			
-			var newBarracksContent:FlxButton = new FlxButton(FlxG.width - 80, 120, "New Barracks", newBarracks_Click);
-			_newBarracksButton = new FlxObjectWithPopup(Pilot.POPUPIMG_PNG, newBarracksContent, Building_Barracks, populateNewBuildingPopup);
+			_newBarracksButton = new FlxButtonWithEvents(FlxG.width - 80, 120, "New Barracks", newBarracks_Click);
+			_newBarracksButton.addEventListener(ButtonEvent.MOUSE_JUSTOVER, newBarracksButton_JustOver);
+			_newBarracksButton.addEventListener(ButtonEvent.MOUSE_JUSTOUT, button_JustOut);
 			
-			var newFarmContent:FlxButton = new FlxButton(FlxG.width - 80, 140, "New Farm", newFarm_Click);
-			_newFarmButton = new FlxObjectWithPopup(Pilot.POPUPIMG_PNG, newFarmContent, Building_Farm, populateNewBuildingPopup);
+			_newFarmButton = new FlxButtonWithEvents(FlxG.width - 80, 140, "New Farm", newFarm_Click);
+			_newFarmButton.addEventListener(ButtonEvent.MOUSE_JUSTOVER, newFarmButton_JustOver);
+			_newFarmButton.addEventListener(ButtonEvent.MOUSE_JUSTOUT, button_JustOut);
 			
-			var newTrainingGroundsContent:FlxButton = new FlxButton(FlxG.width - 80, 160, "New Training", newTrainingGrounds_Click);
-			_newTrainingGroundsButton = new FlxObjectWithPopup(Pilot.POPUPIMG_PNG, newTrainingGroundsContent, Building_TrainingGrounds, populateNewBuildingPopup);
+			_newTrainingGroundsButton = new FlxButtonWithEvents(FlxG.width - 80, 160, "New Training", newTrainingGrounds_Click);
+			_newTrainingGroundsButton.addEventListener(ButtonEvent.MOUSE_JUSTOVER, newTrainingGroundsButton_JustOver);
+			_newTrainingGroundsButton.addEventListener(ButtonEvent.MOUSE_JUSTOUT, button_JustOut);
 			
-			var newBlacksmithContent:FlxButton = new FlxButton(FlxG.width - 80, 180, "New Smithy", newBlacksmith_Click);
-			_newBlacksmithButton = new FlxObjectWithPopup(Pilot.POPUPIMG_PNG, newBlacksmithContent, Building_Blacksmith, populateNewBuildingPopup);
+			_newBlacksmithButton = new FlxButtonWithEvents(FlxG.width - 80, 180, "New Smithy", newBlacksmith_Click);
+			_newBlacksmithButton.addEventListener(ButtonEvent.MOUSE_JUSTOVER, newBlacksmithButton_JustOver);
+			_newBlacksmithButton.addEventListener(ButtonEvent.MOUSE_JUSTOUT, button_JustOut);
 			
-			var newArmouryContent:FlxButton = new FlxButton(FlxG.width - 80, 200, "New Armoury", newArmoury_Click);
-			_newArmouryButton = new FlxObjectWithPopup(Pilot.POPUPIMG_PNG, newArmouryContent, Building_Armoury, populateNewBuildingPopup);
+			_newArmouryButton = new FlxButtonWithEvents(FlxG.width - 80, 200, "New Armoury", newArmoury_Click);
+			_newArmouryButton.addEventListener(ButtonEvent.MOUSE_JUSTOVER, newArmouryButton_JustOver);
+			_newArmouryButton.addEventListener(ButtonEvent.MOUSE_JUSTOUT, button_JustOut);
 			
-			var newBarberContent:FlxButton = new FlxButton(FlxG.width - 80, 220, "New Barber", newBarber_Click);
-			_newBarberButton = new FlxObjectWithPopup(Pilot.POPUPIMG_PNG, newBarberContent, Building_Barber, populateNewBuildingPopup);
+			_newBarberButton = new FlxButtonWithEvents(FlxG.width - 80, 220, "New Barber", newBarber_Click);
+			_newBarberButton.addEventListener(ButtonEvent.MOUSE_JUSTOVER, newBarberButton_JustOver);
+			_newBarberButton.addEventListener(ButtonEvent.MOUSE_JUSTOUT, button_JustOut);
 			
-			_removeBuildingButton = new FlxButton(FlxG.width - 80, 260, "Remove Building", removeBuilding);
+			
+			_removeBuildingButton = new FlxButton(FlxG.width - 80, 260, "Demolish", removeBuilding);
+			
+			//Use Building buttons
+			if (CityManager.instance.hasBuilding(Building_Barracks))
+				makeUseBarracksButton();
+			if (CityManager.instance.hasBuilding(Building_MageTower))
+				makeUseMageTowerButton();
+			if (CityManager.instance.hasBuilding(Building_Farm))
+				makeUseFarmButton();
 			
 			//State buttons
 			_mapButton = new FlxButton(FlxG.width - 80, FlxG.height - 20, "Quest Map", questMap_Click);
 			
 			
-			if (QuestManager.questLibrary[QuestManager.QUEST_MINIONHOUSING1].state == Quest.QUESTSTATE_NONE)
+			//Get the main quest chain started if it's not already
+			var quest1State:uint = QuestManager.questLibrary[QuestManager.QUEST_MINIONHOUSING1].state;
+			if (quest1State != Quest.QUESTSTATE_FINISHED)
 			{
-				QuestManager.instance.makeQuestAvailable(QuestManager.QUEST_MINIONHOUSING1);
-				QuestManager.instance.startQuest(QuestManager.QUEST_MINIONHOUSING1);
-				_tut = new FlxPopup(true, Pilot.POPUPIMG_PNG, "This is your territory and where you will build structures.  Your minions will carry out the construction of anything you desire, your first task is to get used to the building process.", "Welcome to Kingdom! ", 280, 210, 200, 160, 194, 247, 0x777777);
+				if (quest1State == Quest.QUESTSTATE_NONE)
+				{
+					QuestManager.instance.makeQuestAvailable(QuestManager.QUEST_MINIONHOUSING1);
+					QuestManager.instance.startQuest(QuestManager.QUEST_MINIONHOUSING1);
+				}
+				else if (quest1State == Quest.QUESTSTATE_AVAILABLE)
+					QuestManager.instance.startQuest(QuestManager.QUEST_MINIONHOUSING1);
+				
+				_firstQuestPopup = new FlxPopup(true, Pilot.POPUPIMG_PNG, "This is your territory and where you will build structures.  Your minions will carry out the construction of anything you desire, your first task is to get used to the building process.", "Welcome to Kingdom! ", 280, 210, 200, 160, 194, 247, 0x777777);
 			}
 		}
 		
@@ -220,23 +248,18 @@ package
 			
 			
 			//Resources texts
+			add(_woodLabel);
+			add(_woodQuantity);
+			
 			add(_goldLabel);
 			add(_goldQuantity);
 			
-			add(_ironLabel);
-			add(_ironQuantity);
-			
-			add(_silverLabel);
-			add(_silverQuantity);
-			
-			
-			//Resource buttons
-			add(_goldPlusButton);
-			add(_ironPlusButton);
-			add(_silverPlusButton);
+			add(_foodLabel);
+			add(_foodQuantity);
 			
 			
 			//"New building" buttons
+			add(_newQuartersButton);
 			add(_newQuartersButton);
 			add(_newMageTowerButton);
 			add(_newFenceButton);
@@ -251,13 +274,47 @@ package
 			
 			add(_removeBuildingButton);
 			
+			if (_useBarracksButton)
+				add(_useBarracksButton);
+			if (_useMageTowerButton)
+				add(_useMageTowerButton);
+			if (_useFarmButton)
+				add(_useFarmButton);
+			
 			
 			//State buttons
 			add(_mapButton);
 			
 			
-			//"Welcome" popup
-			add(_tut);
+			//First quest popup
+			if (_firstQuestPopup)
+				add(_firstQuestPopup);
+				
+			//Building Cost popup
+			add(_buildingCostPopup);
+		}
+		private function countUseButtons():Number
+		{
+			var ret:Number = 0;
+			if (_useBarracksButton)
+				++ret;
+			if (_useMageTowerButton)
+				++ret;
+			if (_useFarmButton)
+				++ret;
+			return ret;
+		}
+		private function makeUseBarracksButton():void
+		{
+			_useBarracksButton = new FlxButton(10 + countUseButtons() * 90, FlxG.height - 50, "Use Barracks", useBarracks_Click);
+		}
+		private function makeUseMageTowerButton():void
+		{
+			_useMageTowerButton = new FlxButton(10 + countUseButtons() * 90, FlxG.height - 50, "Use Mage Tower", useMageTower_Click);
+		}
+		private function makeUseFarmButton():void
+		{
+			_useFarmButton = new FlxButton(10 + countUseButtons() * 90, FlxG.height - 50, "Use Farm", useFarm_Click);
 		}
 		
 		
@@ -266,14 +323,96 @@ package
 		//                BUTTON FUNCTIONS
 		//
 		//**************************************************
+		private function newQuartersButton_JustOver(e:ButtonEvent):void
+		{
+			populateNewBuildingPopup(_buildingCostPopup, Building_Quarters);
+			_buildingCostPopupVisibility++;
+			_buildingCostPopup.visible = true;
+		}
+		private function newMageTowerButton_JustOver(e:ButtonEvent):void
+		{
+			populateNewBuildingPopup(_buildingCostPopup, Building_MageTower);
+			_buildingCostPopupVisibility++;
+			_buildingCostPopup.visible = true;
+		}
+		private function newFenceButton_JustOver(e:ButtonEvent):void
+		{
+			populateNewBuildingPopup(_buildingCostPopup, Building_Fence);
+			_buildingCostPopupVisibility++;
+			_buildingCostPopup.visible = true;
+		}
+		private function newWallButton_JustOver(e:ButtonEvent):void
+		{
+			populateNewBuildingPopup(_buildingCostPopup, Building_Wall);
+			_buildingCostPopupVisibility++;
+			_buildingCostPopup.visible = true;
+		}
+		private function newCastleButton_JustOver(e:ButtonEvent):void
+		{
+			populateNewBuildingPopup(_buildingCostPopup, Building_Castle);
+			_buildingCostPopupVisibility++;
+			_buildingCostPopup.visible = true;
+		}
+		private function newBarracksButton_JustOver(e:ButtonEvent):void
+		{
+			populateNewBuildingPopup(_buildingCostPopup, Building_Barracks);
+			_buildingCostPopupVisibility++;
+			_buildingCostPopup.visible = true;
+		}
+		private function newFarmButton_JustOver(e:ButtonEvent):void
+		{
+			populateNewBuildingPopup(_buildingCostPopup, Building_Farm);
+			_buildingCostPopupVisibility++;
+			_buildingCostPopup.visible = true;
+		}
+		private function newTrainingGroundsButton_JustOver(e:ButtonEvent):void
+		{
+			populateNewBuildingPopup(_buildingCostPopup, Building_TrainingGrounds);
+			_buildingCostPopupVisibility++;
+			_buildingCostPopup.visible = true;
+		}
+		private function newBlacksmithButton_JustOver(e:ButtonEvent):void
+		{
+			populateNewBuildingPopup(_buildingCostPopup, Building_Blacksmith);
+			_buildingCostPopupVisibility++;
+			_buildingCostPopup.visible = true;
+		}
+		private function newArmouryButton_JustOver(e:ButtonEvent):void
+		{
+			populateNewBuildingPopup(_buildingCostPopup, Building_Armoury);
+			_buildingCostPopupVisibility++;
+			_buildingCostPopup.visible = true;
+		}
+		private function newBarberButton_JustOver(e:ButtonEvent):void
+		{
+			populateNewBuildingPopup(_buildingCostPopup, Building_Barber);
+			_buildingCostPopupVisibility++;
+			_buildingCostPopup.visible = true;
+		}
+		private function button_JustOut(e:ButtonEvent):void
+		{
+			_buildingCostPopupVisibility--;
+			if (!_buildingCostPopupVisibility)
+				_buildingCostPopup.visible = false;
+		}
 		private function populateNewBuildingPopup(popup:FlxPopup, userData:*):void
 		{
+			//By default the popup tries to show up at the mouse position
+			//but we don't want it to be clipped off the edge of the stage
+			var desiredPos:FlxPoint = FlxG.mouse.getScreenPosition();
+			if (desiredPos.x + _buildingCostPopup.width > FlxG.width)
+				//Shift it left
+				desiredPos.x = FlxG.width - _buildingCostPopup.width;
+			if (desiredPos.y + _buildingCostPopup.height > FlxG.height)
+				//Shift it up
+				desiredPos.y = FlxG.height - _buildingCostPopup.height;
+			_buildingCostPopup.position = desiredPos;
+			
 			var ud:Class = Class(userData);
 			popup.header = ud.name;
-			popup.content = ud.resourceCost.getResource(ResourceManager.RESOURCETYPE_GOLD).toString() + " gold\n" +
-							ud.resourceCost.getResource(ResourceManager.RESOURCETYPE_IRON).toString() + " iron\n" +
-							ud.resourceCost.getResource(ResourceManager.RESOURCETYPE_SILVER).toString() + " silver\n\n" +
-							ud.maxHealth.toString() + " health\n";
+			popup.content = ud.resourceCost.getResource(ResourceManager.RESOURCETYPE_WOOD).toString() + " wood\n" +
+							ud.resourceCost.getResource(ResourceManager.RESOURCETYPE_GOLD).toString() + " gold\n" +
+							ud.resourceCost.getResource(ResourceManager.RESOURCETYPE_FOOD).toString() + " food\n";
 		}
 		
 		private function newQuarters_Click():void 
@@ -344,9 +483,15 @@ package
 		}
 		private function addPreBuildDisplay(buildingCls:Class):void
 		{
-			_preBuildDisplay = new PreBuildDisplay(buildingCls);
-			_preBuildDisplay.addEventListener(PreBuildDisplay.BUILDDISPLAY_OK, preBuildOk_Click);
-			_preBuildDisplay.addEventListener(PreBuildDisplay.BUILDDISPLAY_CANCEL, preBuildCancel_Click);
+			removePreUseDisplay();
+			var building:Building = new buildingCls();
+			_preBuildDisplay = new MinionSelector("Building " + building.name,
+				"Gold: " + buildingCls.resourceCost.getResource(ResourceManager.RESOURCETYPE_GOLD) +
+				"\nWood: " + buildingCls.resourceCost.getResource(ResourceManager.RESOURCETYPE_WOOD) +
+				"\nFood: " + buildingCls.resourceCost.getResource(ResourceManager.RESOURCETYPE_FOOD),
+				building, 0, 0, 0, building.minSkillToBuild);
+			_preBuildDisplay.addEventListener(MinionSelector.MINIONSELECTOR_OK, preBuildOk_Click);
+			_preBuildDisplay.addEventListener(MinionSelector.MINIONSELECTOR_CANCEL, preBuildCancel_Click);
 			add(_preBuildDisplay);
 			
 			Cc.log("Created PreBuildDisplay for \"" + buildingCls.name + "\"");
@@ -356,19 +501,19 @@ package
 			if (_preBuildDisplay)
 			{
 				remove(_preBuildDisplay);
-				_preBuildDisplay.removeEventListener(PreBuildDisplay.BUILDDISPLAY_OK, preBuildOk_Click);
-				_preBuildDisplay.removeEventListener(PreBuildDisplay.BUILDDISPLAY_CANCEL, preBuildCancel_Click);
+				_preBuildDisplay.removeEventListener(MinionSelector.MINIONSELECTOR_OK, preBuildOk_Click);
+				_preBuildDisplay.removeEventListener(MinionSelector.MINIONSELECTOR_CANCEL, preBuildCancel_Click);
 				_preBuildDisplay.destroy();
 				_preBuildDisplay = null;
 			}
 		}
 		private function preBuildOk_Click(e:Event):void
 		{
-			var buildingCls:Class = _preBuildDisplay.buildingCls;
+			var buildingCls:Class = (_preBuildDisplay.userData as Object).constructor;
 			_currentNewBuildingCost = buildingCls.resourceCost;
 			if (ResourceManager.instance.checkResources(buildingCls.resourceCost))
 			{
-				_worldView.holdBuilding(_preBuildDisplay.building);
+				_worldView.holdBuilding(_preBuildDisplay.userData as Building);
 				_currentBuildingMinion = MinionManager.instance.getMinionByIndex(_preBuildDisplay.showingMinionIndex);
 			}
 			
@@ -384,17 +529,58 @@ package
 			_worldView.removeNextClickedBuilding();
 		}
 		
-		private function goldPlus_Click():void 
+		private function useBarracks_Click():void
 		{
-			ResourceManager.instance.addResource(ResourceManager.RESOURCETYPE_GOLD, 100);
+			removePreUseDisplay();
+			addPreUseDisplay(Building_Barracks);
 		}
-		private function ironPlus_Click():void 
+		private function useMageTower_Click():void
 		{
-			ResourceManager.instance.addResource(ResourceManager.RESOURCETYPE_IRON, 100);
+			removePreUseDisplay();
+			addPreUseDisplay(Building_MageTower);
 		}
-		private function silverPlus_Click():void 
+		private function useFarm_Click():void
 		{
-			ResourceManager.instance.addResource(ResourceManager.RESOURCETYPE_SILVER, 100);
+			removePreUseDisplay();
+			addPreUseDisplay(Building_Farm);
+		}
+		private function addPreUseDisplay(buildingCls:Class):void
+		{
+			removePreBuildDisplay();
+			var building:Building = new buildingCls();
+			_preUseDisplay = new MinionSelector("Using " + buildingCls.name, "Using this building will increase the minion's stats", buildingCls);
+			_preUseDisplay.addEventListener(MinionSelector.MINIONSELECTOR_OK, preUseOk_Click);
+			_preUseDisplay.addEventListener(MinionSelector.MINIONSELECTOR_CANCEL, preUseCancel_Click);
+			add(_preUseDisplay);
+			
+			Cc.log("Created PreUseDisplay for \"" + buildingCls.name + "\"");
+		}
+		private function removePreUseDisplay():void
+		{
+			if (_preUseDisplay)
+			{
+				remove(_preUseDisplay);
+				_preUseDisplay.removeEventListener(MinionSelector.MINIONSELECTOR_OK, preUseOk_Click);
+				_preUseDisplay.removeEventListener(MinionSelector.MINIONSELECTOR_CANCEL, preUseCancel_Click);
+				_preUseDisplay.destroy();
+				_preUseDisplay = null;
+			}
+		}
+		private function preUseOk_Click(e:Event):void
+		{
+			Cc.log("Ok");
+			if (_preUseDisplay.userData == Building_Barracks)
+				MinionManager.instance.getMinionByIndex(_preUseDisplay.showingMinionIndex).increaseFighterStatBy(1);
+			if (_preUseDisplay.userData == Building_MageTower)
+				MinionManager.instance.getMinionByIndex(_preUseDisplay.showingMinionIndex).increaseMageStatBy(1);
+			if (_preUseDisplay.userData == Building_Farm)
+				MinionManager.instance.getMinionByIndex(_preUseDisplay.showingMinionIndex).increaseGathererStatBy(1);
+			removePreUseDisplay();
+		}
+		private function preUseCancel_Click(e:Event):void
+		{
+			Cc.log("Cancel");
+			removePreUseDisplay();
 		}
 		
 		private function questMap_Click():void 
@@ -423,6 +609,22 @@ package
 			else
 				//We shouldn't be getting here, but if we do, cancel!
 				_worldView.cancelLastPlacedBuilding();
+			
+			if (!_useBarracksButton && e.building is Building_Barracks)
+			{
+				makeUseBarracksButton();
+				add(_useBarracksButton);
+			}
+			else if (!_useMageTowerButton && e.building is Building_MageTower)
+			{
+				makeUseMageTowerButton();
+				add(_useMageTowerButton);
+			}
+			else if (!_useFarmButton && e.building is Building_Farm)
+			{
+				makeUseFarmButton();
+				add(_useFarmButton);
+			}
 		}
 		private function city_BuildingRemoved(e:CityEvent):void 
 		{
@@ -454,32 +656,22 @@ package
 		{
 			switch (e.resource)
 			{
+				case ResourceManager.RESOURCETYPE_WOOD:
+					{
+						_woodQuantity.text = e.newAmount.toString();
+						break;
+					}
 				case ResourceManager.RESOURCETYPE_GOLD:
 					{
 						_goldQuantity.text = e.newAmount.toString();
 						break;
 					}
-				case ResourceManager.RESOURCETYPE_IRON:
+				case ResourceManager.RESOURCETYPE_FOOD:
 					{
-						_ironQuantity.text = e.newAmount.toString();
-						break;
-					}
-				case ResourceManager.RESOURCETYPE_SILVER:
-					{
-						_silverQuantity.text = e.newAmount.toString();
+						_foodQuantity.text = e.newAmount.toString();
 						break;
 					}
 			}
-		}
-		
-		
-		public override function update():void
-		{
-			super.update();
-		}
-		public override function draw():void
-		{
-			super.draw();
 		}
 	}
 }
