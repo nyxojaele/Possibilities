@@ -5,6 +5,7 @@ include_once 'scripts/transaction_functions.php';
 //Startup
 include_once 'scripts/connect_to_mysql.php';
 
+
 $requestID = $_POST['requestID'];
 $sessionID = $_POST['sessionID'];
 $action = $_POST['action'];			//'getall', 'available', 'start', 'update', 'finish', 'reset'
@@ -35,7 +36,7 @@ if ($action == 'getall')
 	$questsResults = mysql_query("
 		SELECT
 			p_ID,
-			ClassTypeID,
+			QuestIndex,
 			RequestID,
 			Type,
 			State
@@ -59,8 +60,8 @@ if ($action == 'getall')
 			if ($questString != "")
 				$questString .= "|";
 			$pid = $questRow['p_ID'];
-			$questString .= $questRow['ClassTypeID'] . "," . $pid . "," . $questRow['State'];
 			$questType = $questRow['Type'];
+			$questString .= "$questType,$pid,${questRow['QuestIndex']},${questRow['State']}";
 			switch ($questType)
 			{
 				case 1:	//QUESTTYPE_REALTIME
@@ -77,7 +78,7 @@ if ($action == 'getall')
 							mysql_num_rows($questResult) == 1)
 						{
 							$realtimeQuestRow = mysql_fetch_row($questResult);
-							$questString .= "," . $realtimeQuestRow[0];
+							$questString .= ",$realtimeQuestRow[0]";
 						}
 						break;
 					}
@@ -95,7 +96,7 @@ if ($action == 'getall')
 							mysql_num_rows($questResult) == 1)
 						{
 							$gametimeQuestRow = mysql_fetch_row($questResult);
-							$questString .= "," . $gametimeQuestRow[0];
+							$questString .= ",$gametimeQuestRow[0]";
 						}
 						break;
 					}
@@ -113,7 +114,7 @@ if ($action == 'getall')
 							mysql_num_rows($questResult) == 1)
 						{
 							$stepQuestRow = mysql_fetch_row($questResult);
-							$questString .= "," . $stepQuestRow[0];
+							$questString .= ",$stepQuestRow[0]";
 						}
 						break;
 					}
@@ -171,6 +172,14 @@ else
 			return;
 		}
 	}
+	else if ($action == 'finishrepeatable')
+	{
+		if (!FinishRepeatableQuest($userID, $id))
+		{
+			CompleteTransaction("Can not finish repeatable quest");
+			return;
+		}
+	}
 	else if ($action == 'update')
 	{
 		if (!UpdateQuest($userID, $id))
@@ -206,8 +215,8 @@ function CheckQuestOwnership($userID, $id)
 //Returns the p_ID of the newly created quest row, or -1 if it couldn't be created
 function ActivateQuest($userID, $requestID)
 {
-	$classTypeID = $_POST['classTypeID'];	//Quest class identifier, used to instantiate in AS3
-	$type = $_POST['type'];					//Quest type identifier, used to join tables is SQL
+	$type = $_POST['type'];
+	$questIndex = $_POST['questIndex'];
 	
 	//Check if the quest has already been activated or not
 	$questResults = mysql_query("
@@ -217,24 +226,72 @@ function ActivateQuest($userID, $requestID)
 			tblQuests
 		WHERE
 			UserID = $userID
-			AND ClassTypeID = $classTypeID
 			AND Type = $type
+			AND QuestIndex = $questIndex
 		");
 	if (!$questResults)
 		//Error with query
 		return -1;
 	$questCount = mysql_num_rows($questResults);
-	if ($questCount != 0)
-		//The quest has already been activated (and thus, inserted into the table)
-		return -1;
 	
 	mysql_query("START TRANSACTION");
 	$commit = true;
+	if ($questCount != 0)
+	{
+		//This is a repeatable quest, and has been completed, so reset it
+		$questRow = mysql_fetch_assoc($questResults);
+		$thisQuestPid = $questRow['p_ID'];
+		
+		if (!mysql_query("
+			DELETE FROM
+				tblQuests
+			WHERE
+				p_ID = $thisQuestPid
+			"))
+			$commit = false;
+		switch ($type)
+		{
+			case 1:	//QUESTTYPE_REALTIME
+				{
+					if (!mysql_query("
+						DELETE FROM 
+							tblRealtimeQuests
+						WHERE
+							p_ID = $thisQuestPid
+						"))
+						$commit = false;
+					break;
+				}
+			case 2:	//QUESTTYPE_GAMETIME
+				{
+					if (!mysql_query("
+						DELETE FROM
+							tblGametimeQuests
+						WHERE
+							p_ID = $thisQuestPid
+						"))
+						$commit = false;
+					break;
+				}
+			case 3:	//QUESTTYPE_STEP
+				{
+					if (!mysql_query("
+						DELETE FROM
+							tblStepQuests
+						WHERE
+							p_ID = $thisQuestPid
+						"))
+						$commit = false;
+					break;
+				}
+		}
+	}
+	
 	if (!mysql_query("
 		INSERT INTO
-			tblQuests (UserID, ClassTypeID, Type, State, RequestID)
+			tblQuests (UserID, QuestIndex, Type, State, RequestID)
 		VALUES
-			($userID, $classTypeID, $type, 1, $requestID)
+			($userID, $questIndex, $type, 1, $requestID)
 		"))
 		//Error with query
 		$commit = false;
@@ -275,6 +332,7 @@ function ActivateQuest($userID, $requestID)
 				break;
 			}
 	}
+	
 	if (!$commit)
 	{
 		mysql_query("ROLLBACK");
@@ -294,7 +352,7 @@ function StartQuest($userID, $ID)
 	
 	mysql_query("START TRANSACTION");
 	$commit = true;
-	
+
 	//Update generic quest state
 	$questUpdateResults = mysql_query("
 		UPDATE
@@ -471,6 +529,85 @@ function FinishQuest($userID, $ID)
 						tblStepQuests
 					SET
 						CurrentSteps = $currentSteps
+					WHERE
+						p_ID = $actualQuestID
+					"))
+					$commit = false;
+				break;
+			}
+	}
+	if (!$commit)
+	{
+		mysql_query("ROLLBACK");
+		return 0;
+	}
+	
+	mysql_query("COMMIT");
+	return 1;
+}
+function FinishRepeatableQuest($userID, $ID)
+{
+	$actualQuestID = GetActualQuestID($userID, $ID);
+	if ($actualQuestID < 0)
+		return 0;
+	$questType = GetQuestType($actualQuestID);
+	if ($questType == -1)
+		return 0;
+	
+	mysql_query("START TRANSACTION");
+	$commit = true;
+	
+	//Update generic quest state
+	$questUpdateResults = mysql_query("
+		UPDATE
+			tblQuests
+		SET
+			State = 1
+		WHERE
+			p_ID = $actualQuestID
+		");
+	if (!$questUpdateResults)
+		$commit = false;
+	
+	//Update specific quest state
+	switch ($questType)
+	{
+		case 1:	//QUESTTYPE_REALTIME
+			{
+				//Just reset the start time
+				if (!mysql_query("
+					UPDATE
+						tblRealtimeQuests
+					SET
+						StartTime = 0
+					WHERE
+						p_ID = $actualQuestID
+					"))
+					$commit = false;
+				break;
+			}
+		case 2:	//QUESTTYPE_GAMETIME
+			{
+				//Just reset the elapsed time
+				if (!mysql_query("
+					UPDATE
+						tblGametimeQuests
+					SET
+						TimeSoFarMs = 0
+					WHERE
+						p_ID = $actualQuestID
+					"))
+					$commit = false;
+				break;
+			}
+		case 3:	//QUESTTYPE_STEP
+			{
+				//Just reset the current steps
+				if (!mysql_query("
+					UPDATE
+						tblStepQuests
+					SET
+						CurrentSteps = 0
 					WHERE
 						p_ID = $actualQuestID
 					"))
