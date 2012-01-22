@@ -9,6 +9,7 @@ package
 	import managers.minions.MinionEvent;
 	import managers.QuestManager;
 	import managers.quests.QuestEvent;
+	import managers.QuestWatcher;
 	import managers.ResourceManager;
 	import managers.resources.ResourceEvent;
 	import org.flixel.FlxG;
@@ -41,6 +42,9 @@ package
 			Cc.log("*****Stream State*****");
 			FlxG.bgColor = 0xff1105ef;
 			FlxG.mouse.show();
+			
+			//Instantiate QuestWatcher so it will have the proper collection of quests that are started
+			var qw:QuestWatcher = QuestWatcher.instance;
 			
 			//Send request for saved resources
 			ResourceManager.instance.addEventListener(ResourceEvent.RESOURCE_AMOUNTCHANGED, resourceLoaded);
@@ -175,6 +179,8 @@ package
 				_quests)
 			{
 				cleanup();
+				//Now it's safe for it to monitor events
+				QuestWatcher.instance.init();
 				FlxG.switchState(new PlayState);
 			}
 		}
