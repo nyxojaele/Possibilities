@@ -9,7 +9,7 @@ package managers.city.buildings
 	{
 		private static const _name:String = "Quarters";
 		public static function get name():String { return _name; }
-		private static const _resourceCost:ResourceCollection = new ResourceCollection(5, 5, 0);
+		private static const _resourceCost:ResourceCollection = new ResourceCollection(1, 1, 1);
 		public static function get resourceCost():ResourceCollection { return _resourceCost; }
 		private static const _maxHealth:Number = 50;
 		public static function get maxHealth():Number { return _maxHealth; }
