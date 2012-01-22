@@ -175,6 +175,7 @@ package managers
 				workingPlacement = foundPlacement;
 				sendBuildingMoveRequest(workingPlacement, placeAt);
 				workingPlacement.coordsInTiles.copyFrom(placeAt.coordsInTiles);
+				dispatchEvent(new CityEvent(CityEvent.CITY_BUILDING_MOVED, workingPlacement.building));
 			}
 			else
 			{
@@ -183,8 +184,8 @@ package managers
 				_buildings.push(placingPlacement);
 				workingPlacement.coordsInTiles.copyFrom(placeAt.coordsInTiles);
 				sendBuildingPlaceRequest(workingPlacement);
+				dispatchEvent(new CityEvent(CityEvent.CITY_BUILDING_PLACED, workingPlacement.building));
 			}
-			dispatchEvent(new CityEvent(CityEvent.CITY_BUILDING_PLACED, workingPlacement.building));
 			return workingPlacement;
 		}
 		private function getPlacementOfBuilding(building:Building):GridPlacement
@@ -209,6 +210,15 @@ package managers
 		public function sortOn(property:String, type:uint):void
 		{
 			_buildings.sortOn(property, type);
+		}
+		public function hasBuilding(buildingCls:Class):Boolean
+		{
+			for each (var placement:GridPlacement in _buildings)
+			{
+				if (placement.building is buildingCls)
+					return true;
+			}
+			return false;
 		}
 	}
 

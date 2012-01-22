@@ -10,6 +10,7 @@ package managers.city
 	public class CityEvent extends Event 
 	{
 		public static const CITY_BUILDING_PLACED:String = "City_Building_Placed";
+		public static const CITY_BUILDING_MOVED:String = "City_Building_Moved";
 		public static const CITY_BUILDING_REMOVED:String = "City_Building_Removed";
 		
 		
